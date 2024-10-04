@@ -49,7 +49,7 @@ class DymoAPI {
         if ($this->apiKey) $tokens["private"] = "Bearer " . $this->apiKey;
         if (empty($tokens)) return;
         try {
-            $response = $this->postRequest("/v1/dvr/tokens", ["organization" => $this->organization, "tokens" => $tokens]);
+            $response = $this->postRequest("/v1/dvr/tokens", ["tokens" => $tokens]);
             if ($this->rootApiKey && !isset($response["root"])) throw new AuthenticationError("Invalid root token.");
             if ($this->apiKey && !isset($response["private"])) throw new AuthenticationError("Invalid private token.");
             $this->tokensResponse = $response;
