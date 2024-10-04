@@ -8,5 +8,3 @@ function set_base_url($is_local) {
     }
     return BASE_URL;
 }
-
-?>
