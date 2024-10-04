@@ -12,5 +12,6 @@
     },
     "require-dev": {
         "phpunit/phpunit": "10"
-    }
+    },
+    "version": "0.0.3"
 }
