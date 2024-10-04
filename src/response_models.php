@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Dymo\Models;
 
-class UrlEncryptResponse
-{
+class UrlEncryptResponse {
     public string $original;
     public string $code;
     public string $encrypt;
@@ -18,8 +17,7 @@ class UrlEncryptResponse
     }
 }
 
-class IsValidPwdDetails
-{
+class IsValidPwdDetails {
     public string $validation;
     public string $message;
 
@@ -30,8 +28,7 @@ class IsValidPwdDetails
     }
 }
 
-class IsValidPwdResponse
-{
+class IsValidPwdResponse {
     public bool $valid;
     public string $password;
     public array $details;
@@ -44,8 +41,7 @@ class IsValidPwdResponse
     }
 }
 
-class SatinizerFormats
-{
+class SatinizerFormats {
     public bool $ascii;
     public bool $bitcoinAddress;
     public bool $cLikeIdentifier;
@@ -133,8 +129,7 @@ class SatinizerFormats
     }
 }
 
-class SatinizerIncludes
-{
+class SatinizerIncludes {
     public bool $spaces;
     public bool $hasSql;
     public bool $hasNoSql;
@@ -165,8 +160,7 @@ class SatinizerIncludes
     }
 }
 
-class SatinizerResponse
-{
+class SatinizerResponse {
     public string $input;
     public SatinizerFormats $formats;
     public SatinizerIncludes $includes;
@@ -179,8 +173,7 @@ class SatinizerResponse
     }
 }
 
-class PrayerTimes
-{
+class PrayerTimes {
     public string $coordinates;
     public string $date;
     public string $calculationParameters;
@@ -217,8 +210,7 @@ class PrayerTimes
     }
 }
 
-class PrayerTimesByTimezone
-{
+class PrayerTimesByTimezone {
     public string $timezone;
     public PrayerTimes $prayerTimes;
 
@@ -229,8 +221,7 @@ class PrayerTimesByTimezone
     }
 }
 
-class PrayerTimesResponse
-{
+class PrayerTimesResponse {
     public string $country;
     public array $prayerTimesByTimezone; // Array de PrayerTimesByTimezone
 
@@ -241,8 +232,7 @@ class PrayerTimesResponse
     }
 }
 
-class DataVerifierEmail
-{
+class DataVerifierEmail {
     public ?bool $valid;
     public ?bool $fraud;
     public ?bool $freeSubdomain;
@@ -279,8 +269,7 @@ class DataVerifierEmail
     }
 }
 
-class DataVerifierPhone
-{
+class DataVerifierPhone {
     public ?bool $valid;
     public ?bool $fraud;
     public ?string $phone;
@@ -308,8 +297,7 @@ class DataVerifierPhone
     }
 }
 
-class DataVerifierDomain
-{
+class DataVerifierDomain {
     public ?bool $valid;
     public ?bool $fraud;
     public ?string $domain;
@@ -324,8 +312,7 @@ class DataVerifierDomain
     }
 }
 
-class DataVerifierResponse
-{
+class DataVerifierResponse {
     public DataVerifierEmail $email;
     public DataVerifierPhone $phone;
     public DataVerifierDomain $domain;
@@ -339,8 +326,7 @@ class DataVerifierResponse
 }
 
 
-class SendEmailResponse
-{
+class SendEmailResponse {
     public bool $status;
     public ?string $error;
 
