@@ -338,4 +338,24 @@ class DataVerifierResponse
     }
 }
 
-?>
+
+class SendEmailResponse
+{
+    public bool $status;
+    public ?string $error;
+
+    public function __construct(bool $status, ?string $error){
+        $this->$status = $status;
+        $this->$error =$error;
+    }
+}
+
+class SRNGResponse {
+    public array $values;
+    public int|float $executionTime; 
+
+    public function __construct(array $values, int|float $executionTime) {
+        $this->values = $values;
+        $this->executionTime = $executionTime;
+    }
+}
