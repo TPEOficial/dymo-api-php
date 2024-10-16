@@ -3,6 +3,18 @@
 require_once "../config.php";
 require_once "../exceptions.php";
 
+/**
+ * Retrieves prayer times based on the provided latitude and longitude.
+ * 
+ * @param array $data An associative array containing:
+ *                    - lat: The latitude of the location.
+ *                    - lon: The longitude of the location.
+ * 
+ * @return array The prayer times as an associative array.
+ * 
+ * @throws BadRequestError If latitude or longitude is not provided.
+ * @throws APIError If the API request fails or returns a non-200 status code.
+ */
 function get_prayer_times($data) {
     if (empty($data["lat"]) || empty($data["lon"])) throw new BadRequestError("You must provide a latitude and longitude.");
 
@@ -38,19 +50,26 @@ function satinizer($data) {
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     
-    if (curl_errno($ch)) {
-        throw new APIError(curl_error($ch));
-    }
-
+    if (curl_errno($ch)) throw new APIError(curl_error($ch));
+    
     curl_close($ch);
 
-    if ($httpCode !== 200) {
-        throw new APIError("API request failed with status code: $httpCode");
-    }
+    if ($httpCode !== 200) throw new APIError("API request failed with status code: $httpCode");
 
     return json_decode($response, true);
 }
 
+/**
+ * Checks if the provided password is valid given the parameters.
+ * @param string $data["password"] The password to be checked.
+ * @param string $data["email"] The email to be checked against.
+ * @param array|string $data["bannedWords"] A list of banned words.
+ * @param int $data["min"] The minimum length of the password.
+ * @param int $data["max"] The maximum length of the password.
+ * @return object The result of the check.
+ * @throws BadRequestError If the parameters are invalid.
+ * @throws APIError If the API request failed.
+ */
 function is_valid_pwd($data) {
     if (empty($data["password"])) throw new BadRequestError("You must specify at least the password.");
 
@@ -101,6 +120,13 @@ function is_valid_pwd($data) {
     return json_decode($response, true);
 }
 
+/**
+ * Encrypts a given URL into an encrypted link that will be used to shorten the provided URL.
+ * @param string $url The URL to be encrypted.
+ * @return object The encrypted URL.
+ * @throws BadRequestError If the provided URL is invalid.
+ * @throws APIError If the API request failed.
+ */
 function new_url_encrypt($url) {
     if (empty($url) || !(strpos($url, "https://") === 0 || strpos($url, "http://") === 0)) throw new BadRequestError("You must provide a valid url.");
 

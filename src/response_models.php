@@ -308,11 +308,13 @@ class DataVerifierResponse {
     public DataVerifierEmail $email;
     public DataVerifierPhone $phone;
     public DataVerifierDomain $domain;
+    public DataVerifierIp $ip;
 
-    public function __construct(DataVerifierEmail $email, DataVerifierPhone $phone, DataVerifierDomain $domain) {
+    public function __construct(DataVerifierEmail $email, DataVerifierPhone $phone, DataVerifierDomain $domain, DataVerifierIp $ip) {
         $this->email = $email;
         $this->phone = $phone;
         $this->domain = $domain;
+        $this->ip = $ip;
     }
 }
 
@@ -323,7 +325,7 @@ class SendEmailResponse {
 
     public function __construct(bool $status, ?string $error) {
         $this->$status = $status;
-        $this->$error =$error;
+        $this->$error = $error;
     }
 }
 
