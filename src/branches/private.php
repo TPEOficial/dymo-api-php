@@ -4,28 +4,11 @@ require_once "../config.php";
 require_once "../exceptions.php";
 
 function is_valid_data($token, $data) {
-    if (!array_key_exists("email", $data) && !array_key_exists("phone", $data) && 
-        !array_key_exists("domain", $data) && !array_key_exists("creditCard", $data) && 
-        !array_key_exists("ip", $data)) {
-        throw new BadRequestError("You must provide at least one parameter.");
-    }
-    
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, BASE_URL . "/v1/private/secure/verify");
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, ["Authorization: $token", "Content-Type: application/json"]);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-    
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    
-    if (curl_errno($ch)) throw new APIError(curl_error($ch));
+    $hasValidKey = array_reduce(["email", "phone", "domain", "creditCard", "ip"], function ($carry, $key) use ($data) {
+        return $carry || array_key_exists($key, $data);
+    }, false);
 
-    curl_close($ch);
-
-    if ($httpCode !== 200) throw new APIError("API request failed with status code: $httpCode");
-    return json_decode($response, true);
+    if (!$hasValidKey) throw new BadRequestError("You must provide at least one parameter.");
 }
 
 function send_email($token, $data) {

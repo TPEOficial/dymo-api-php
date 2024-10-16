@@ -57,8 +57,7 @@ class DymoAPI {
         return $functionName;
     }
 
-    private function initializeTokens()
-    {
+    private function initializeTokens() {
         $currentTime = new DateTime();
         if ($this->tokensResponse && $this->lastFetchTime && ($currentTime->getTimestamp() - $this->lastFetchTime->getTimestamp()) < 300) return;
         $tokens = [];

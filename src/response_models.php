@@ -9,8 +9,7 @@ class UrlEncryptResponse {
     public string $code;
     public string $encrypt;
 
-    public function __construct(string $original, string $code, string $encrypt)
-    {
+    public function __construct(string $original, string $code, string $encrypt) {
         $this->original = $original;
         $this->code = $code;
         $this->encrypt = $encrypt;
@@ -21,8 +20,7 @@ class IsValidPwdDetails {
     public string $validation;
     public string $message;
 
-    public function __construct(string $validation, string $message)
-    {
+    public function __construct(string $validation, string $message) {
         $this->validation = $validation;
         $this->message = $message;
     }
@@ -33,8 +31,7 @@ class IsValidPwdResponse {
     public string $password;
     public array $details;
 
-    public function __construct(bool $valid, string $password, array $details)
-    {
+    public function __construct(bool $valid, string $password, array $details) {
         $this->valid = $valid;
         $this->password = $password;
         $this->details = $details;
@@ -165,8 +162,7 @@ class SatinizerResponse {
     public SatinizerFormats $formats;
     public SatinizerIncludes $includes;
 
-    public function __construct(string $input, SatinizerFormats $formats, SatinizerIncludes $includes)
-    {
+    public function __construct(string $input, SatinizerFormats $formats, SatinizerIncludes $includes) {
         $this->input = $input;
         $this->formats = $formats;
         $this->includes = $includes;
@@ -214,8 +210,7 @@ class PrayerTimesByTimezone {
     public string $timezone;
     public PrayerTimes $prayerTimes;
 
-    public function __construct(string $timezone, PrayerTimes $prayerTimes)
-    {
+    public function __construct(string $timezone, PrayerTimes $prayerTimes) {
         $this->timezone = $timezone;
         $this->prayerTimes = $prayerTimes;
     }
@@ -223,10 +218,9 @@ class PrayerTimesByTimezone {
 
 class PrayerTimesResponse {
     public string $country;
-    public array $prayerTimesByTimezone; // Array de PrayerTimesByTimezone
+    public array $prayerTimesByTimezone;
 
-    public function __construct(string $country, array $prayerTimesByTimezone)
-    {
+    public function __construct(string $country, array $prayerTimesByTimezone) {
         $this->country = $country;
         $this->prayerTimesByTimezone = $prayerTimesByTimezone;
     }
@@ -242,7 +236,7 @@ class DataVerifierEmail {
     public ?bool $customTLD;
     public ?string $domain;
     public ?bool $roleAccount;
-    public ?array $plugins; // Array de key=>value
+    public ?array $plugins;
 
     public function __construct(
         ?bool $valid,
@@ -276,8 +270,7 @@ class DataVerifierPhone {
     public ?string $prefix;
     public ?string $number;
     public ?string $country;
-    public ?array $plugins; // Array de key=>value
-
+    public ?array $plugins;
     public function __construct(
         ?bool $valid,
         ?bool $fraud,
@@ -301,10 +294,9 @@ class DataVerifierDomain {
     public ?bool $valid;
     public ?bool $fraud;
     public ?string $domain;
-    public ?array $plugins; // Array de key=>value
+    public ?array $plugins;
 
-    public function __construct(?bool $valid, ?bool $fraud, ?string $domain, ?array $plugins)
-    {
+    public function __construct(?bool $valid, ?bool $fraud, ?string $domain, ?array $plugins) {
         $this->valid = $valid;
         $this->fraud = $fraud;
         $this->domain = $domain;
@@ -317,8 +309,7 @@ class DataVerifierResponse {
     public DataVerifierPhone $phone;
     public DataVerifierDomain $domain;
 
-    public function __construct(DataVerifierEmail $email, DataVerifierPhone $phone, DataVerifierDomain $domain)
-    {
+    public function __construct(DataVerifierEmail $email, DataVerifierPhone $phone, DataVerifierDomain $domain) {
         $this->email = $email;
         $this->phone = $phone;
         $this->domain = $domain;
@@ -330,7 +321,7 @@ class SendEmailResponse {
     public bool $status;
     public ?string $error;
 
-    public function __construct(bool $status, ?string $error){
+    public function __construct(bool $status, ?string $error) {
         $this->$status = $status;
         $this->$error =$error;
     }
