@@ -4,11 +4,8 @@ require_once "../config.php";
 require_once "../exceptions.php";
 
 function is_valid_data($token, $data) {
-    $hasValidKey = array_reduce(["email", "phone", "domain", "creditCard", "ip"], function ($carry, $key) use ($data) {
-        return $carry || array_key_exists($key, $data);
-    }, false);
-
-    if (!$hasValidKey) throw new BadRequestError("You must provide at least one parameter.");
+    if (!array_reduce(["email", "phone", "domain", "creditCard", "ip", "wallet"], function ($carry, $key) use ($data) {
+        return $carry || array_key_exists($key, $data); }, false)) throw new BadRequestError("You must provide at least one parameter.");
 }
 
 function send_email($token, $data) {

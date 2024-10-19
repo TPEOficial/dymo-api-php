@@ -290,6 +290,27 @@ class DataVerifierPhone {
     }
 }
 
+class DataVerifierWallet {
+    public ?bool $valid;
+    public ?bool $fraud;
+    public ?string $wallet;
+    public ?string $type;
+    public ?array $plugins;
+    public function __construct(
+        ?bool $valid,
+        ?bool $fraud,
+        ?string $wallet,
+        ?string $type,
+        ?array $plugins
+    ) {
+        $this->valid = $valid;
+        $this->fraud = $fraud;
+        $this->wallet = $wallet;
+        $this->type = $type;
+        $this->plugins = $plugins;
+    }
+}
+
 class DataVerifierDomain {
     public ?bool $valid;
     public ?bool $fraud;
@@ -309,12 +330,14 @@ class DataVerifierResponse {
     public DataVerifierPhone $phone;
     public DataVerifierDomain $domain;
     public DataVerifierIp $ip;
+    public DataVerifierWallet $wallet;
 
-    public function __construct(DataVerifierEmail $email, DataVerifierPhone $phone, DataVerifierDomain $domain, DataVerifierIp $ip) {
+    public function __construct(DataVerifierEmail $email, DataVerifierPhone $phone, DataVerifierDomain $domain, DataVerifierIp $ip, DataVerifierWallet $wallet) {
         $this->email = $email;
         $this->phone = $phone;
         $this->domain = $domain;
         $this->ip = $ip;
+        $this->wallet = $wallet;
     }
 }
 
