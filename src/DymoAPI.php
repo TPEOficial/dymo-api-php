@@ -126,7 +126,7 @@ class DymoAPI {
     }
 
     public function sendEmail($data) {
-        if (!$this->serverEmailConfig) throw new AuthenticationError("You must configure the email client settings.");
+        if (!$this->serverEmailConfig && !$this->rootApiKey) throw new AuthenticationError("You must configure the email client settings.");
         $responseData = $this->getFunction("private", "send_email")(array_merge($data, ["serverEmailConfig" => $this->serverEmailConfig]));
 
         return new SendEmailResponse(
