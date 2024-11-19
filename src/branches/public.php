@@ -38,6 +38,29 @@ function get_prayer_times($data) {
     return json_decode($response, true);
 }
 
+/**
+ * Sanitizes the input and returns it in various formats.
+ *
+ * The satinizer API processes the input data and returns a response
+ * containing the sanitized input and various format representations.
+ *
+ * The response includes format details such as ASCII, Bitcoin address,
+ * C-like identifier, coordinates, credit card, date, Discord username,
+ * DOI, domain, E.164 phone number, email, emoji, Han unification, hashtag,
+ * hyphen word break, IPv6, IP, JIRA ticket, MAC address, name, number,
+ * PAN from GSTIN, password, port, telephone, text, and semantic version.
+ *
+ * Additionally, the response includes information on the presence of spaces,
+ * SQL and NoSQL keywords, letters, uppercase and lowercase letters, symbols,
+ * and digits in the input data.
+ *
+ * @param array $data An associative array containing the input to sanitize.
+ *
+ * @return array The response containing sanitized data and formats.
+ *
+ * @throws BadRequestError If the input is not provided.
+ * @throws APIError If the API request fails or returns a non-200 status code.
+ */
 function satinizer($data) {
     if (!isset($data["input"])) throw new BadRequestError("You must specify at least the input.");
     
