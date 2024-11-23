@@ -66,25 +66,49 @@ require_once "../exceptions.php";
  * @return DataVerifierResponse The response from the API with validation details.
  */
 function is_valid_data($token, $data) {
-    if (!array_reduce(["email", "phone", "domain", "creditCard", "ip", "wallet"], function ($carry, $key) use ($data) {
-        return $carry || array_key_exists($key, $data); }, false)) throw new BadRequestError("You must provide at least one parameter.");
+    if (!array_reduce(["email", "phone", "domain", "creditCard", "ip", "wallet"], function ($carry, $key) use ($data) { return $carry || array_key_exists($key, $data); }, false)) throw new BadRequestError("You must provide at least one parameter.");
+    try {
+        $ch = curl_init(BASE_URL . "/v1/private/secure/verify");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ["Authorization: $token"]);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+
+        $response = curl_exec($ch);
+
+        if (curl_errno($ch)) throw new BadRequestError(curl_error($ch));
+
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($httpCode >= 400) throw new BadRequestError("Error: HTTP $httpCode");
+
+        return json_decode($response, true);
+
+    } catch (BadRequestError $e) {
+        throw new InternalServerError($e->getMessage());
+    }
 }
 
 /**
- * Sends an email using the specified API token and data.
+ * Sends an email using the provided data through the email sender API.
  *
- * This function performs a POST request to the Dymo API to send an email.
- * It requires the following data parameters:
+ * This function requires the following data parameters:
  * 
  * - `from`: The email address from which the email will be sent.
  * - `to`: The recipient email address.
  * - `subject`: The subject of the email.
  * - `html`: The HTML content of the email.
+ * - `attachments`: An optional array of attachments, where each attachment can
+ *    specify either `path` or `content`, but not both. Each attachment can also
+ *    have a `filename` and `cid`.
+ * 
+ * Attachments must not exceed a total size of 40 MB.
  *
  * @param string $token The API token for authorization.
- * @param array $data An associative array containing the email data.
+ * @param array $data An associative array containing the email data and optional attachments.
  * @return array The response from the API, decoded from JSON.
- * @throws BadRequestError If required data parameters are missing.
+ * @throws BadRequestError If required data parameters are missing or invalid, or if attachments exceed size limit.
  * @throws APIError If the API request fails or encounters an error.
  */
 function send_email($token, $data) {
@@ -93,6 +117,29 @@ function send_email($token, $data) {
     if (!isset($data["subject"])) throw new BadRequestError("You must provide a subject for the email to be sent.");
     if (!isset($data["html"])) throw new BadRequestError("You must provide HTML.");
     
+    if (isset($data["attachments"]) && is_array($data["attachments"])) {
+        $totalSize = 0;
+        $processedAttachments = [];
+        foreach ($data["attachments"] as $attachment) {
+            if ((isset($attachment["path"]) && isset($attachment["content"])) || (!isset($attachment["path"]) && !isset($attachment["content"]))) throw new BadRequestError("You must provide either 'path' or 'content', not both.");
+            if (isset($attachment["path"])) {
+                $fileContent = file_get_contents($attachment["path"]);
+                if ($fileContent === false) throw new BadRequestError("Unable to read the file at " . $attachment["path"]);
+                $sizeInBytes = strlen($fileContent);
+            } else if (isset($attachment["content"])) {
+                $fileContent = $attachment["content"];
+                $sizeInBytes = strlen($fileContent);
+            }
+            $totalSize += $sizeInBytes;
+            if ($totalSize > 40 * 1024 * 1024) throw new BadRequestError("Attachments exceed the maximum allowed size of 40 MB.");
+            $processedAttachments[] = [
+                "filename" => $attachment["filename"] ?? basename($attachment["path"] ?? ""),
+                "content" => base64_encode($fileContent),
+                "cid" => $attachment["cid"] ?? null
+            ];
+        }
+        $data["attachments"] = $processedAttachments;
+    }
 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, BASE_URL . "/v1/private/sender/sendEmail");
