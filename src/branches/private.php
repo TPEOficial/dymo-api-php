@@ -99,6 +99,7 @@ function is_valid_data($token, $data) {
  * - `to`: The recipient email address.
  * - `subject`: The subject of the email.
  * - `html`: The HTML content of the email.
+ * - `options`: Specifications at the time of sending the email.
  * - `attachments`: An optional array of attachments, where each attachment can
  *    specify either `path` or `content`, but not both. Each attachment can also
  *    have a `filename` and `cid`.
