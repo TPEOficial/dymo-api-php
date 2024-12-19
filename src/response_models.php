@@ -229,6 +229,7 @@ class PrayerTimesResponse {
 class DataVerifierEmail {
     public ?bool $valid;
     public ?bool $fraud;
+    public ?bool $proxiedEmail;
     public ?bool $freeSubdomain;
     public ?bool $corporate;
     public ?string $email;
@@ -241,6 +242,7 @@ class DataVerifierEmail {
     public function __construct(
         ?bool $valid,
         ?bool $fraud,
+        ?bool $proxiedEmail,
         ?bool $freeSubdomain,
         ?bool $corporate,
         ?string $email,
@@ -252,6 +254,7 @@ class DataVerifierEmail {
     ) {
         $this->valid = $valid;
         $this->fraud = $fraud;
+        $this->proxiedEmail = $proxiedEmail;
         $this->freeSubdomain = $freeSubdomain;
         $this->corporate = $corporate;
         $this->email = $email;
