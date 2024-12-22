@@ -25,7 +25,7 @@ class DymoAPI {
     private $apiKey;
     private $serverEmailConfig;
     private $tokensResponse;
-    private $lastFetchTime;
+    private $tokensVerified;
     private $local;
     private $baseUrl;
 
@@ -47,7 +47,7 @@ class DymoAPI {
         $this->apiKey = $config["api_key"] ?? null;
         $this->serverEmailConfig = $config["server_email_config"] ?? null;
         $this->tokensResponse = null;
-        $this->lastFetchTime = null;
+        $this->tokensVerified = false;
         $this->local = $config["local"] ?? false;
 
         $this->setBaseUrl($this->local);
@@ -97,7 +97,7 @@ class DymoAPI {
      * validate the tokens by sending a POST request to `/v1/dvr/tokens` with
      * the tokens in the request body. If the tokens are valid, the function will
      * store the validated tokens in the `tokensResponse` property and set the
-     * `lastFetchTime` property to the current time.
+     * `tokensVerified` property to the current time.
      *
      * If the tokens are invalid, the function will throw an `AuthenticationError`.
      *
@@ -106,7 +106,7 @@ class DymoAPI {
      */
     private function initializeTokens() {
         $currentTime = new DateTime();
-        if ($this->tokensResponse && $this->lastFetchTime && ($currentTime->getTimestamp() - $this->lastFetchTime->getTimestamp()) < 300) return;
+        if ($this->tokensResponse && $this->tokensVerified) return;
         $tokens = [];
         if ($this->rootApiKey) $tokens["root"] = "Bearer " . $this->rootApiKey;
         if ($this->apiKey) $tokens["private"] = "Bearer " . $this->apiKey;
@@ -116,7 +116,7 @@ class DymoAPI {
             if ($this->rootApiKey && !isset($response["root"])) throw new AuthenticationError("Invalid root token.");
             if ($this->apiKey && !isset($response["private"])) throw new AuthenticationError("Invalid private token.");
             $this->tokensResponse = $response;
-            $this->lastFetchTime = $currentTime;
+            $this->tokensVerified = true;
         } catch (Exception $e) {
             throw new AuthenticationError("Token validation error: " . $e->getMessage());
         }
