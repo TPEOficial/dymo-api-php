@@ -234,6 +234,7 @@ class DataVerifierEmail {
     public ?bool $corporate;
     public ?string $email;
     public ?string $realUser;
+    public ?bool $didYouMean;
     public ?bool $customTLD;
     public ?string $domain;
     public ?bool $roleAccount;
@@ -247,6 +248,7 @@ class DataVerifierEmail {
         ?bool $corporate,
         ?string $email,
         ?string $realUser,
+        ?bool $didYouMean,
         ?bool $customTLD,
         ?string $domain,
         ?bool $roleAccount,
@@ -259,6 +261,7 @@ class DataVerifierEmail {
         $this->corporate = $corporate;
         $this->email = $email;
         $this->realUser = $realUser;
+        $this->didYouMean = $didYouMean;
         $this->customTLD = $customTLD;
         $this->domain = $domain;
         $this->roleAccount = $roleAccount;
