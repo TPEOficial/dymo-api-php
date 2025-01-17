@@ -17,17 +17,17 @@ use Dymo\Models\SRNGResponse;
 use Dymo\Models\PrayerTimes;
 
 require_once "exceptions.php";
-require_once "responseModels.php";
+require_once "response_models.php";
 
 class DymoAPI {
     private $organization;
     private $rootApiKey;
     private $apiKey;
     private $serverEmailConfig;
-    private $tokensResponse;
-    private $tokensVerified;
     private $local;
     private $baseUrl;
+    private static $tokensResponse = null;
+    private static $tokensVerified = false;
 
     const BASE_URL = "https://api.tpeoficial.com";
 
@@ -46,8 +46,6 @@ class DymoAPI {
         $this->rootApiKey = $config["root_api_key"] ?? null;
         $this->apiKey = $config["api_key"] ?? null;
         $this->serverEmailConfig = $config["server_email_config"] ?? null;
-        $this->tokensResponse = null;
-        $this->tokensVerified = false;
         $this->local = $config["local"] ?? false;
 
         $this->setBaseUrl($this->local);
@@ -105,18 +103,18 @@ class DymoAPI {
      * validated within the last 5 minutes.
      */
     private function initializeTokens() {
-        $currentTime = new DateTime();
-        if ($this->tokensResponse && $this->tokensVerified) return;
+        if (self::$tokensResponse && self::$tokensVerified) return;
+
         $tokens = [];
         if ($this->rootApiKey) $tokens["root"] = "Bearer " . $this->rootApiKey;
         if ($this->apiKey) $tokens["private"] = "Bearer " . $this->apiKey;
         if (empty($tokens)) return;
         try {
             $response = $this->postRequest("/v1/dvr/tokens", ["tokens" => $tokens]);
-            if ($this->rootApiKey && !isset($response["root"])) throw new AuthenticationError("Invalid root token.");
-            if ($this->apiKey && !isset($response["private"])) throw new AuthenticationError("Invalid private token.");
-            $this->tokensResponse = $response;
-            $this->tokensVerified = true;
+            if ($this->rootApiKey && (!isset($response["root"]) || $response["root"] === false)) throw new AuthenticationError("Invalid root token.");
+            if ($this->apiKey && (!isset($response["private"]) || $response["private"] === false)) throw new AuthenticationError("Invalid private token.");
+            self::$tokensResponse = $response;
+            self::$tokensVerified = true;
         } catch (Exception $e) {
             throw new AuthenticationError("Token validation error: " . $e->getMessage());
         }
