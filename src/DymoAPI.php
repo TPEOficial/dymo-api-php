@@ -26,6 +26,7 @@ class DymoAPI {
     private $serverEmailConfig;
     private $local;
     private $baseUrl;
+    private $errorLogRoute = "./error.log";
     private static $tokensResponse = null;
     private static $tokensVerified = false;
 
@@ -71,17 +72,15 @@ class DymoAPI {
  * Retrieves a function name from the specified module.
  *
  * This function checks if the specified module exists and is accessible.
- * If the module is "private" and no API key is provided, an AuthenticationError
- * is thrown. If the module file does not exist, an exception is thrown.
+ * If the module file does not exist, an exception is thrown.
  * 
  * @param string $moduleName The name of the module to retrieve the function from.
  * @param string $functionName The name of the function to retrieve. Defaults to "main".
  * @return string The name of the function.
- * @throws AuthenticationError If trying to access a private module without a valid API key.
  * @throws Exception If the module file cannot be found.
  */
     private function getFunction($moduleName, $functionName = "main") {
-        if ($moduleName === "private" && $this->apiKey === null) throw new AuthenticationError("Invalid private token.");
+        if ($moduleName === "private" && $this->apiKey === null) return error_log("Invalid private token.\n", 3, $this->errorLogRoute);
         $modulePath = __DIR__ . "/branches/" . $moduleName . ".php";
         if (!file_exists($modulePath)) throw new Exception("Module not found: " . $modulePath);
         require_once $modulePath;
@@ -97,7 +96,6 @@ class DymoAPI {
      * store the validated tokens in the `tokensResponse` property and set the
      * `tokensVerified` property to the current time.
      *
-     * If the tokens are invalid, the function will throw an `AuthenticationError`.
      *
      * The function will not send a request if the tokens have already been
      * validated within the last 5 minutes.
@@ -111,12 +109,12 @@ class DymoAPI {
         if (empty($tokens)) return;
         try {
             $response = $this->postRequest("/v1/dvr/tokens", ["tokens" => $tokens]);
-            if ($this->rootApiKey && (!isset($response["root"]) || $response["root"] === false)) throw new AuthenticationError("Invalid root token.");
-            if ($this->apiKey && (!isset($response["private"]) || $response["private"] === false)) throw new AuthenticationError("Invalid private token.");
+            if ($this->rootApiKey && (!isset($response["root"]) || $response["root"] === false)) return error_log("Invalid root token.\n", 3, $this->errorLogRoute);
+            if ($this->apiKey && (!isset($response["private"]) || $response["private"] === false)) return error_log("Invalid private token.\n", 3, $this->errorLogRoute);
             self::$tokensResponse = $response;
             self::$tokensVerified = true;
         } catch (Exception $e) {
-            throw new AuthenticationError("Token validation error: " . $e->getMessage());
+            return error_log("Token validation error: " . $e->getMessage() . "\n", 3, $this->errorLogRoute);
         }
     }
 
@@ -244,10 +242,9 @@ class DymoAPI {
      *
      * @param array $data The data to send to the API.
      * @return SendEmailResponse The response from the API.
-     * @throws AuthenticationError If the email client settings are not configured.
      */
     public function sendEmail($data) {
-        if (!$this->serverEmailConfig && !$this->rootApiKey) throw new AuthenticationError("You must configure the email client settings.");
+        if (!$this->serverEmailConfig && !$this->rootApiKey) return error_log("You must configure the email client settings.\n", 3, );
         $responseData = $this->getFunction("private", "send_email")(array_merge($data, ["serverEmailConfig" => $this->serverEmailConfig]));
 
         return new SendEmailResponse(
