@@ -109,8 +109,8 @@ class DymoAPI {
         if (empty($tokens)) return;
         try {
             $response = $this->postRequest("/v1/dvr/tokens", ["tokens" => $tokens]);
-            if ($this->rootApiKey && (!isset($response["root"]) || $response["root"] === false)) return error_log("Invalid root token.\n", 3, $this->errorLogRoute);
-            if ($this->apiKey && (!isset($response["private"]) || $response["private"] === false)) return error_log("Invalid private token.\n", 3, $this->errorLogRoute);
+            if ($this->rootApiKey && (!isset($response["root"]) || $response["root"] === false)) throw new AuthenticationError("Invalid root token.");
+            if ($this->apiKey && (!isset($response["private"]) || $response["private"] === false)) throw new AuthenticationError("Invalid private token.");
             self::$tokensResponse = $response;
             self::$tokensVerified = true;
         } catch (Exception $e) {
