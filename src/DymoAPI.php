@@ -4,6 +4,7 @@ use Dymo\Models\PrayerTimesByTimezone;
 use Dymo\Models\DataVerifierResponse;
 use Dymo\Models\PrayerTimesResponse;
 use Dymo\Models\IsValidPwdResponse;
+use Dymo\Models\InputSanitizerData;
 use Dymo\Models\DataVerifierDomain;
 use Dymo\Models\UrlEncryptResponse;
 use Dymo\Models\DataVerifierPhone;
@@ -13,8 +14,13 @@ use Dymo\Models\IsValidPwdDetails;
 use Dymo\Models\SendEmailResponse;
 use Dymo\Models\SatinizerResponse;
 use Dymo\Models\SatinizerFormats;
+use Dymo\Models\PrayerTimesData;
+use Dymo\Models\IsValidPwdData;
 use Dymo\Models\SRNGResponse;
 use Dymo\Models\PrayerTimes;
+use Dymo\Models\Validator;
+use Dymo\Models\SendEmail;
+use Dymo\Models\SRNG;
 
 require_once "exceptions.php";
 require_once "response_models.php";
@@ -64,22 +70,22 @@ class DymoAPI {
      * @param bool $local Whether the base URL should be set to the local
      *                    development server.
      */
-    private function setBaseUrl($local) {
+    private function setBaseUrl($local): void {
         $this->baseUrl = $local ? "http://localhost:3050" : self::BASE_URL;
     }
 
-/**
- * Retrieves a function name from the specified module.
- *
- * This function checks if the specified module exists and is accessible.
- * If the module file does not exist, an exception is thrown.
- * 
- * @param string $moduleName The name of the module to retrieve the function from.
- * @param string $functionName The name of the function to retrieve. Defaults to "main".
- * @return string The name of the function.
- * @throws Exception If the module file cannot be found.
- */
-    private function getFunction($moduleName, $functionName = "main") {
+    /**
+     * Retrieves a function name from the specified module.
+     *
+     * This function checks if the specified module exists and is accessible.
+     * If the module file does not exist, an exception is thrown.
+     * 
+     * @param string $moduleName The name of the module to retrieve the function from.
+     * @param string $functionName The name of the function to retrieve. Defaults to "main".
+     * @return string The name of the function.
+     * @throws Exception If the module file cannot be found.
+     */
+    private function getFunction($moduleName, $functionName = "main"): string {
         if ($moduleName === "private" && $this->apiKey === null) return error_log("Invalid private token.\n", 3, $this->errorLogRoute);
         $modulePath = __DIR__ . "/branches/" . $moduleName . ".php";
         if (!file_exists($modulePath)) throw new Exception("Module not found: " . $modulePath);
@@ -100,7 +106,7 @@ class DymoAPI {
      * The function will not send a request if the tokens have already been
      * validated within the last 5 minutes.
      */
-    private function initializeTokens() {
+    private function initializeTokens(): void {
         if (self::$tokensResponse && self::$tokensVerified) return;
 
         $tokens = [];
@@ -114,7 +120,7 @@ class DymoAPI {
             self::$tokensResponse = $response;
             self::$tokensVerified = true;
         } catch (Exception $e) {
-            return error_log("Token validation error: " . $e->getMessage() . "\n", 3, $this->errorLogRoute);
+            error_log("Token validation error: " . $e->getMessage() . "\n", 3, $this->errorLogRoute);
         }
     }
 
@@ -123,9 +129,9 @@ class DymoAPI {
      *
      * @param string $endpoint The endpoint to call.
      * @param array $data The data to send in the request body.
-     * @return array The response from the API, decoded from JSON.
+     * @return array|null The response from the API, decoded from JSON.
      */
-    private function postRequest($endpoint, $data) {
+    private function postRequest($endpoint, $data): array|null {
         $ch = curl_init($this->baseUrl . $endpoint);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POST, true);
@@ -195,10 +201,10 @@ class DymoAPI {
      *   - `plugins`: The plugins used to validate the wallet.
      *
      * @param string $token The API key to validate the data.
-     * @param array $data The data to validate.
+     * @param Validator $data The data to validate.
      * @return DataVerifierResponse The response from the API with validation details.
      */
-    public function isValidData($data) {
+    public function isValidData(Validator $data): DataVerifierResponse {
         $response = $this->getFunction("private", "is_valid_data")($data);
         if (isset($response["ip"]["as"])) {
             $response["ip"]["_as"] = $response["ip"]["as"];
@@ -240,10 +246,10 @@ class DymoAPI {
     /**
      * Send an email using the Dymo API.
      *
-     * @param array $data The data to send to the API.
+     * @param SendEmail $data The data to send to the API.
      * @return SendEmailResponse The response from the API.
      */
-    public function sendEmail($data) {
+    public function sendEmail(SendEmail $data): SendEmailResponse {
         if (!$this->serverEmailConfig && !$this->rootApiKey) return error_log("You must configure the email client settings.\n", 3, );
         $responseData = $this->getFunction("private", "send_email")(array_merge($data, ["serverEmailConfig" => $this->serverEmailConfig]));
 
@@ -256,10 +262,10 @@ class DymoAPI {
     /**
      * Get a list of cryptographically secure random numbers from the Dymo API.
      *
-     * @param array $data The data to send to the API.
+     * @param SRNG $data The data to send to the API.
      * @return SRNGResponse The response from the API.
      */
-    public function getRandom($data) {
+    public function getRandom(SRNG $data): SRNGResponse {
         $responseData = $this->getFunction("private", "get_random")(array_merge($data));
         return new SRNGResponse(
             $responseData["values"],
@@ -270,10 +276,10 @@ class DymoAPI {
     /**
      * Get prayer times for a given country and timezone.
      *
-     * @param array $data The data to send to the API.
+     * @param PrayerTimesData $data The data to send to the API.
      * @return PrayerTimesResponse The response from the API.
      */
-    public function getPrayerTimes($data) {
+    public function getPrayerTimes(PrayerTimesData $data): PrayerTimesResponse {
         $responseData = $this->getFunction("public", "get_prayer_times")($data);
         $prayerTimesByTimezone = [];
         foreach ($responseData["prayerTimesByTimezone"] as $timezone => $prayerTimes) {
@@ -314,10 +320,10 @@ class DymoAPI {
      * SQL and NoSQL keywords, letters, uppercase and lowercase letters, symbols,
      * and digits in the input data.
      *
-     * @param array $data The data to sanitize.
+     * @param InputSanitizerData $data The data to sanitize.
      * @return SatinizerResponse The response containing sanitized data and formats.
      */
-    public function satinizer($data) {
+    public function satinizer(InputSanitizerData $data): SatinizerResponse {
         $responseData = $this->getFunction("public", "satinizer")($data);
         return new SatinizerResponse(
             $responseData["input"],
@@ -370,10 +376,10 @@ class DymoAPI {
      * `IsValidPwdResponse` object containing the validation status, the
      * password, and detailed information about each validation check.
      *
-     * @param array $data The data containing the password to validate.
+     * @param IsValidPwdData $data The data containing the password to validate.
      * @return IsValidPwdResponse The response from the API with validation details.
      */
-    public function isValidPwd($data) {
+    public function isValidPwd(IsValidPwdData $data): IsValidPwdResponse {
         $responseData = $this->getFunction("public", "is_valid_pwd")($data);
         $details = [];
         foreach ($responseData["details"] as $detail) {
