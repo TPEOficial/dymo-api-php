@@ -4,6 +4,83 @@ declare(strict_types=1);
 
 namespace Dymo\Models;
 
+enum VerifyPlugins: string {
+    case COMPROMISE_DETECTOR = "compromiseDetector";
+    case NSFW = "nsfw";
+    case REPUTATION = "reputation";
+    case TOR_NETWORK = "torNetwork";
+    case TYPOSQUATTING = "typosquatting";
+    case URL_SHORTENER = "urlShortener";
+}
+
+class PhoneData {
+    public $iso;
+    public string $phone;
+
+    public function __construct($iso, string $phone) {
+        $this->iso = $iso;
+        $this->phone = $phone;
+    }
+}
+
+class CreditCardData {
+    public string|int $pan;
+    public ?string $expirationDate;
+    public string|int $cvc;
+    public string|int $cvv;
+
+    public function __construct(string|int $pan, string $expirationDate, string|int $cvc, string|int $cvv) {
+        $this->pan = $pan;
+        $this->expirationDate = $expirationDate;
+        $this->cvc = $cvc;
+        $this->cvv = $cvv;
+    }
+}
+
+
+class Validator {
+    public ?string $email;
+    public ?PhoneData $phone;
+    public ?string $domain;
+    public ?string $creditCard;
+    public ?CreditCardData $creditCardData;
+    public ?string $ip;
+    public ?string $wallet;
+    public ?array $plugins;
+
+    public function __construct(
+        ?string $email,
+        ?PhoneData $phone,
+        ?string $domain,
+        ?string $creditCard,
+        ?CreditCardData $creditCardData,
+        ?string $ip,
+        ?string $wallet,
+        ?array $plugins
+    ) {
+        $this->email = $email;
+        $this->phone = $phone;
+        $this->domain = $domain;
+        $this->creditCard = $creditCard;
+        $this->creditCardData = $creditCardData;
+        $this->ip = $ip;
+        $this->wallet = $wallet;
+        if ($plugins) {
+            $this->setPlugins($plugins);
+        }
+    }
+
+    // Method to set and validate the 'plugins' array using enum
+    public function setPlugins(array $plugins) {
+        foreach ($plugins as $plugin) {
+            if (!VerifyPlugins::tryFrom($plugin)) {
+                throw new InvalidArgumentException("Invalid plugin: $plugin");
+            }
+        }
+        $this->plugins = $plugins;
+    }
+}
+
 class UrlEncryptResponse {
     public string $original;
     public string $code;
@@ -13,6 +90,28 @@ class UrlEncryptResponse {
         $this->original = $original;
         $this->code = $code;
         $this->encrypt = $encrypt;
+    }
+}
+
+class IsValidPwdData {
+    public ?string $email;
+    public ?string $password;
+    public string|array $bannedWords;
+    public ?int $min;
+    public ?int $max;
+
+    public function __construct(
+        ?string $email,
+        ?string $password,
+        string|array $bannedWords,
+        ?int $min,
+        ?int $max
+    ) {
+        $this->email = $email;
+        $this->password = $password;
+        $this->bannedWords = $bannedWords;
+        $this->min = $min;
+        $this->max = $max;
     }
 }
 
@@ -35,6 +134,14 @@ class IsValidPwdResponse {
         $this->valid = $valid;
         $this->password = $password;
         $this->details = $details;
+    }
+}
+
+class InputSanitizerData {
+    public ?string $input;
+
+    public function __construct(?string $input = null) {
+        $this->input = $input;
     }
 }
 
@@ -166,6 +273,16 @@ class SatinizerResponse {
         $this->input = $input;
         $this->formats = $formats;
         $this->includes = $includes;
+    }
+}
+
+class PrayerTimesData {
+    public ?float $lat;
+    public ?float $lon;
+
+    public function __construct(?float $lat = null, ?float $lon = null) {
+        $this->lat = $lat;
+        $this->lon = $lon;
     }
 }
 
@@ -347,6 +464,78 @@ class DataVerifierResponse {
     }
 }
 
+class Attachment {
+    public string $filename;
+    public ?string $path;
+    public mixed $content;
+    public ?string $cid;
+
+    public function __construct(
+        string $filename,
+        ?string $path,
+        mixed $content,
+        ?string $cid
+    ) {
+        $this->filename = $filename;
+        $this->path = $path;
+        $this->content = $content;
+        $this->cid = $cid;
+    }
+}
+
+class EmailOptions {
+    public const PRIORITY_HIGH = 'high';
+    public const PRIORITY_NORMAL = 'normal';
+    public const PRIORITY_LOW = 'low';
+
+    public ?string $priority;
+    public ?bool $composeTailwindClasses;
+    public ?bool $compileToCssSafe;
+    public ?bool $onlyVerifiedEmails;
+
+    public function __construct(
+        ?string $priority = null,
+        ?bool $composeTailwindClasses = false,
+        ?bool $compileToCssSafe = false,
+        ?bool $onlyVerifiedEmails = false
+    ) {
+        if ($priority !== null && !in_array($priority, [self::PRIORITY_HIGH, self::PRIORITY_NORMAL, self::PRIORITY_LOW])) {
+            $priority = null; // Assigning null if the priority value is invalid
+        }
+        $this->priority = $priority;
+        $this->composeTailwindClasses = $composeTailwindClasses;
+        $this->compileToCssSafe = $compileToCssSafe;
+        $this->onlyVerifiedEmails = $onlyVerifiedEmails;
+    }
+}
+
+class SendEmail {
+    public string $from;
+    public string $to;
+    public string $subject;
+    public ?string $html;
+    public mixed $react;
+    public ?EmailOptions $options;
+    public ?array $attachments;
+
+    public function __construct(
+        string $from,
+        string $to,
+        string $subject,
+        mixed $react,
+        ?string $html,
+        ?EmailOptions $options,
+        ?array $attachments
+    ) {
+        $this->from = $from;
+        $this->to = $to;
+        $this->subject = $subject;
+        $this->html = $html;
+        $this->react = $react;
+        $this->options = $options;
+        $this->attachments = $attachments;
+    }
+}
 
 class SendEmailResponse {
     public bool $status;
@@ -358,9 +547,21 @@ class SendEmailResponse {
     }
 }
 
+class SRNG {
+    public int $min;
+    public int $max;
+    public ?int $quantity;
+
+    public function __construct(int $min, int $max, ?int $quantity = null) {
+        $this->min = $min;
+        $this->max = $max;
+        $this->quantity = $quantity;
+    }
+}
+
 class SRNGResponse {
     public array $values;
-    public int|float $executionTime; 
+    public int|float $executionTime;
 
     public function __construct(array $values, int|float $executionTime) {
         $this->values = $values;
