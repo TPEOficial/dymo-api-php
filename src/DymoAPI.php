@@ -33,8 +33,6 @@ class DymoAPI {
     private $local;
     private $baseUrl;
     private $errorLogRoute = "./error.log";
-    private static $tokensResponse = null;
-    private static $tokensVerified = false;
 
     const BASE_URL = "https://api.tpeoficial.com";
 
@@ -56,8 +54,6 @@ class DymoAPI {
         $this->local = $config["local"] ?? false;
 
         $this->setBaseUrl($this->local);
-
-        if ($this->apiKey) $this->initializeTokens();
     }
 
     /**
@@ -91,37 +87,6 @@ class DymoAPI {
         if (!file_exists($modulePath)) throw new Exception("Module not found: " . $modulePath);
         require_once $modulePath;
         return $functionName;
-    }
-
-    /**
-     * Initialize tokens for the Dymo API.
-     *
-     * If the `rootApiKey` or `apiKey` properties are set, this function will
-     * validate the tokens by sending a POST request to `/v1/dvr/tokens` with
-     * the tokens in the request body. If the tokens are valid, the function will
-     * store the validated tokens in the `tokensResponse` property and set the
-     * `tokensVerified` property to the current time.
-     *
-     *
-     * The function will not send a request if the tokens have already been
-     * validated within the last 5 minutes.
-     */
-    private function initializeTokens(): void {
-        if (self::$tokensResponse && self::$tokensVerified) return;
-
-        $tokens = [];
-        if ($this->rootApiKey) $tokens["root"] = "Bearer " . $this->rootApiKey;
-        if ($this->apiKey) $tokens["private"] = "Bearer " . $this->apiKey;
-        if (empty($tokens)) return;
-        try {
-            $response = $this->postRequest("/v1/dvr/tokens", ["tokens" => $tokens]);
-            if ($this->rootApiKey && (!isset($response["root"]) || $response["root"] === false)) throw new AuthenticationError("Invalid root token.");
-            if ($this->apiKey && (!isset($response["private"]) || $response["private"] === false)) throw new AuthenticationError("Invalid private token.");
-            self::$tokensResponse = $response;
-            self::$tokensVerified = true;
-        } catch (Exception $e) {
-            error_log("Token validation error: " . $e->getMessage() . "\n", 3, $this->errorLogRoute);
-        }
     }
 
     /**
