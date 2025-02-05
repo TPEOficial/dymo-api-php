@@ -11,6 +11,7 @@ enum VerifyPlugins: string {
     case TOR_NETWORK = "torNetwork";
     case TYPOSQUATTING = "typosquatting";
     case URL_SHORTENER = "urlShortener";
+    case BLOCKLIST = "blocklist";
 }
 
 class PhoneData {
