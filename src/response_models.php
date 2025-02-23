@@ -41,7 +41,7 @@ class CreditCardData {
 
 class Validator {
     public ?string $email;
-    public ?PhoneData $phone;
+    public PhoneData|string|null $phone;
     public ?string $domain;
     public ?string $creditCard;
     public ?CreditCardData $creditCardData;
