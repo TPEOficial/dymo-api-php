@@ -170,6 +170,8 @@ class DymoAPI {
      * @param string $token The API key to validate the data.
      * @param Validator $data The data to validate.
      * @return DataVerifierResponse The response from the API with validation details.
+     * 
+     * [Documentation](https://docs.tpeoficial.com/docs/dymo-api/private/data-verifier)
      */
     public function isValidData(Validator $data): DataVerifierResponse {
         $response = $this->getFunction("private", "is_valid_data")($data);
@@ -215,6 +217,8 @@ class DymoAPI {
      *
      * @param SendEmail $data The data to send to the API.
      * @return SendEmailResponse The response from the API.
+     * 
+     * [Documentation](https://docs.tpeoficial.com/docs/dymo-api/private/sender-send-email/getting-started)
      */
     public function sendEmail(SendEmail $data): SendEmailResponse {
         if (!$this->serverEmailConfig && !$this->rootApiKey) return error_log("You must configure the email client settings.\n", 3, );
@@ -231,6 +235,8 @@ class DymoAPI {
      *
      * @param SRNG $data The data to send to the API.
      * @return SRNGResponse The response from the API.
+     * 
+     * [Documentation](https://docs.tpeoficial.com/docs/dymo-api/private/secure-random-number-generator)
      */
     public function getRandom(SRNG $data): SRNGResponse {
         $responseData = $this->getFunction("private", "get_random")(array_merge($data));
@@ -245,6 +251,8 @@ class DymoAPI {
      *
      * @param PrayerTimesData $data The data to send to the API.
      * @return PrayerTimesResponse The response from the API.
+     * 
+     * [Documentation](https://docs.tpeoficial.com/docs/dymo-api/public/prayertimes)
      */
     public function getPrayerTimes(PrayerTimesData $data): PrayerTimesResponse {
         $responseData = $this->getFunction("public", "get_prayer_times")($data);
@@ -289,6 +297,8 @@ class DymoAPI {
      *
      * @param InputSanitizerData $data The data to sanitize.
      * @return SatinizerResponse The response containing sanitized data and formats.
+     * 
+     * [Documentation](https://docs.tpeoficial.com/docs/dymo-api/public/input-satinizer)
      */
     public function satinizer(InputSanitizerData $data): SatinizerResponse {
         $responseData = $this->getFunction("public", "satinizer")($data);
@@ -345,6 +355,8 @@ class DymoAPI {
      *
      * @param IsValidPwdData $data The data containing the password to validate.
      * @return IsValidPwdResponse The response from the API with validation details.
+     * 
+     * [Documentation](https://docs.tpeoficial.com/docs/dymo-api/public/password-validator)
      */
     public function isValidPwd(IsValidPwdData $data): IsValidPwdResponse {
         $responseData = $this->getFunction("public", "is_valid_pwd")($data);
