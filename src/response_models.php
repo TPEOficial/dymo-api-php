@@ -11,6 +11,7 @@ enum VerifyPlugins: string {
     case TOR_NETWORK = "torNetwork";
     case TYPOSQUATTING = "typosquatting";
     case URL_SHORTENER = "urlShortener";
+    case BLOCKLIST = "blocklist";
 }
 
 class PhoneData {
@@ -40,7 +41,7 @@ class CreditCardData {
 
 class Validator {
     public ?string $email;
-    public ?PhoneData $phone;
+    public PhoneData|string|null $phone;
     public ?string $domain;
     public ?string $creditCard;
     public ?CreditCardData $creditCardData;

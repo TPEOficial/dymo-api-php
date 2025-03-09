@@ -30,11 +30,8 @@ class DymoAPI {
     private $rootApiKey;
     private $apiKey;
     private $serverEmailConfig;
-    private $local;
     private $baseUrl;
     private $errorLogRoute = "./error.log";
-    private static $tokensResponse = null;
-    private static $tokensVerified = false;
 
     const BASE_URL = "https://api.tpeoficial.com";
 
@@ -42,36 +39,37 @@ class DymoAPI {
      * Construct a new instance of the Dymo API client.
      *
      * @param array $config The configuration array for the client.
-     * @param string $config['organization'] The organization name.
-     * @param string $config['root_api_key'] The root API key.
-     * @param string $config['api_key'] The API key.
-     * @param array $config['server_email_config'] The server email configuration.
-     * @param bool $config['local'] Whether to use the local development server.
+     * @param string $config["organization"] The organization name.
+     * @param string $config["root_api_key"] The root API key.
+     * @param string $config["api_key"] The API key.
+     * @param array $config["server_email_config"] The server email configuration.
+     * @param string $config["base_url"] Whether to use the local development server.
      */
     public function __construct($config = []) {
         $this->organization = $config["organization"] ?? null;
         $this->rootApiKey = $config["root_api_key"] ?? null;
         $this->apiKey = $config["api_key"] ?? null;
         $this->serverEmailConfig = $config["server_email_config"] ?? null;
-        $this->local = $config["local"] ?? false;
+        $this->baseUrl = $config["base_url"] ?? "https://api.tpeoficial.com";
 
-        $this->setBaseUrl($this->local);
-
-        if ($this->apiKey) $this->initializeTokens();
+        $this->setBaseUrl($this->baseUrl);
     }
 
     /**
      * Set the base URL for the Dymo API.
      *
-     * If the "local" parameter is set to true, the base URL will be set to
+     * If the "baseUrl" parameter is set to true, the base URL will be set to
      * "http://localhost:3050". Otherwise, the base URL will be set to the default
      * value of "https://api.tpeoficial.com".
      *
-     * @param bool $local Whether the base URL should be set to the local
+     * @param string $baseUrl Whether the base URL should be set to the local
      *                    development server.
      */
-    private function setBaseUrl($local): void {
-        $this->baseUrl = $local ? "http://localhost:3050" : self::BASE_URL;
+    private function setBaseUrl(string $baseUrl): void {
+        if (preg_match("/^(https:\/\/api\.tpeoficial\.com$|http:\/\/(localhost:\d+|dymoapi:\d+))$/", $baseUrl)) {
+            global $BASE_URL;
+            $BASE_URL = $baseUrl;
+        } else throw new InvalidArgumentException("[Dymo API] Invalid URL. It must be https://api.tpeoficial.com or start with http://localhost or http://dymoapi followed by a port.");
     }
 
     /**
@@ -91,37 +89,6 @@ class DymoAPI {
         if (!file_exists($modulePath)) throw new Exception("Module not found: " . $modulePath);
         require_once $modulePath;
         return $functionName;
-    }
-
-    /**
-     * Initialize tokens for the Dymo API.
-     *
-     * If the `rootApiKey` or `apiKey` properties are set, this function will
-     * validate the tokens by sending a POST request to `/v1/dvr/tokens` with
-     * the tokens in the request body. If the tokens are valid, the function will
-     * store the validated tokens in the `tokensResponse` property and set the
-     * `tokensVerified` property to the current time.
-     *
-     *
-     * The function will not send a request if the tokens have already been
-     * validated within the last 5 minutes.
-     */
-    private function initializeTokens(): void {
-        if (self::$tokensResponse && self::$tokensVerified) return;
-
-        $tokens = [];
-        if ($this->rootApiKey) $tokens["root"] = "Bearer " . $this->rootApiKey;
-        if ($this->apiKey) $tokens["private"] = "Bearer " . $this->apiKey;
-        if (empty($tokens)) return;
-        try {
-            $response = $this->postRequest("/v1/dvr/tokens", ["tokens" => $tokens]);
-            if ($this->rootApiKey && (!isset($response["root"]) || $response["root"] === false)) throw new AuthenticationError("Invalid root token.");
-            if ($this->apiKey && (!isset($response["private"]) || $response["private"] === false)) throw new AuthenticationError("Invalid private token.");
-            self::$tokensResponse = $response;
-            self::$tokensVerified = true;
-        } catch (Exception $e) {
-            error_log("Token validation error: " . $e->getMessage() . "\n", 3, $this->errorLogRoute);
-        }
     }
 
     /**
