@@ -84,7 +84,7 @@ class DymoAPI {
      * @throws Exception If the module file cannot be found.
      */
     private function getFunction($moduleName, $functionName = "main"): string {
-        if ($moduleName === "private" && $this->apiKey === null) return error_log("Invalid private token.\n", 3, $this->errorLogRoute);
+        if ($moduleName === "private" && $this->apiKey === null && $this->rootApiKey === null) return error_log("Invalid private token.\n", 3, $this->errorLogRoute);
         $modulePath = __DIR__ . "/branches/" . $moduleName . ".php";
         if (!file_exists($modulePath)) throw new Exception("Module not found: " . $modulePath);
         require_once $modulePath;
