@@ -352,7 +352,7 @@ class DataVerifierEmail {
     public ?bool $corporate;
     public ?string $email;
     public ?string $realUser;
-    public ?bool $didYouMean;
+    public ?string $didYouMean;
     public ?bool $customTLD;
     public ?string $domain;
     public ?bool $roleAccount;
@@ -366,7 +366,7 @@ class DataVerifierEmail {
         ?bool $corporate,
         ?string $email,
         ?string $realUser,
-        ?bool $didYouMean,
+        ?string $didYouMean,
         ?bool $customTLD,
         ?string $domain,
         ?bool $roleAccount,
