@@ -70,7 +70,11 @@ function is_valid_data($token, $data) {
     try {
         $ch = curl_init(BASE_URL . "/v1/private/secure/verify");
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ["Authorization: $token"]);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "Authorization: $token", 
+            "Content-Type: application/json", 
+            "User-Agent: DymoAPISDK/1.0.0"
+        ]);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
 
@@ -146,7 +150,10 @@ function send_email($token, $data) {
     curl_setopt($ch, CURLOPT_URL, BASE_URL . "/v1/private/sender/sendEmail");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, ["Authorization: $token", "Content-Type: application/json"]);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        "Authorization: $token",
+        "User-Agent: DymoAPISDK/1.0.0"
+    ]);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
     
     $response = curl_exec($ch);
@@ -193,7 +200,11 @@ function get_random($token, $data) {
     curl_setopt($ch, CURLOPT_URL, BASE_URL . "/v1/private/srng");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, ["Authorization: $token", "Content-Type: application/json"]);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        "Authorization: $token", 
+        "Content-Type: application/json", 
+        "User-Agent: DymoAPISDK/1.0.0"
+    ]);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
     
     $response = curl_exec($ch);
