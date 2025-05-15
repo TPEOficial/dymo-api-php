@@ -38,7 +38,6 @@ class CreditCardData {
     }
 }
 
-
 class Validator {
     public ?string $email;
     public PhoneData|string|null $phone;
@@ -71,12 +70,10 @@ class Validator {
         }
     }
 
-    // Method to set and validate the 'plugins' array using enum
+    // Method to set and validate the 'plugins' array using enum.
     public function setPlugins(array $plugins) {
         foreach ($plugins as $plugin) {
-            if (!VerifyPlugins::tryFrom($plugin)) {
-                throw new InvalidArgumentException("Invalid plugin: $plugin");
-            }
+            if (!VerifyPlugins::tryFrom($plugin)) throw new InvalidArgumentException("Invalid plugin: $plugin");
         }
         $this->plugins = $plugins;
     }
@@ -387,6 +384,28 @@ class DataVerifierEmail {
     }
 }
 
+class CarrierInfo {
+    public string $carrierName;
+    public float $accuracy;
+    public string $carrierType;
+    public string $carrierCountry;
+    public string $carrierCountryCode;
+
+    public function __construct(
+        string $carrierName,
+        float $accuracy,
+        string $carrierType,
+        string $carrierCountry,
+        string $carrierCountryCode
+    ) {
+        $this->carrierName = $carrierName;
+        $this->accuracy = $accuracy;
+        $this->carrierType = $carrierType;
+        $this->carrierCountry = $carrierCountry;
+        $this->carrierCountryCode = $carrierCountryCode;
+    }
+}
+
 class DataVerifierPhone {
     public ?bool $valid;
     public ?bool $fraud;
@@ -395,6 +414,8 @@ class DataVerifierPhone {
     public ?string $number;
     public ?string $country;
     public ?array $plugins;
+    public ?CarrierInfo $carrierInfo;
+
     public function __construct(
         ?bool $valid,
         ?bool $fraud,
@@ -402,7 +423,8 @@ class DataVerifierPhone {
         ?string $prefix,
         ?string $number,
         ?string $country,
-        ?array $plugins
+        ?array $plugins,
+        ?CarrierInfo $carrierInfo
     ) {
         $this->valid = $valid;
         $this->fraud = $fraud;
@@ -411,6 +433,7 @@ class DataVerifierPhone {
         $this->number = $number;
         $this->country = $country;
         $this->plugins = $plugins;
+        $this->carrierInfo = $carrierInfo;
     }
 }
 
