@@ -387,20 +387,17 @@ class DataVerifierEmail {
 class CarrierInfo {
     public string $carrierName;
     public float $accuracy;
-    public string $carrierType;
     public string $carrierCountry;
     public string $carrierCountryCode;
 
     public function __construct(
         string $carrierName,
         float $accuracy,
-        string $carrierType,
         string $carrierCountry,
         string $carrierCountryCode
     ) {
         $this->carrierName = $carrierName;
         $this->accuracy = $accuracy;
-        $this->carrierType = $carrierType;
         $this->carrierCountry = $carrierCountry;
         $this->carrierCountryCode = $carrierCountryCode;
     }
@@ -412,10 +409,11 @@ class DataVerifierPhone {
     public ?string $phone;
     public ?string $prefix;
     public ?string $number;
+    public ?string $lineType;
+    public ?CarrierInfo $carrierInfo;
     public ?string $country;
     public ?string $countryCode;
     public ?array $plugins;
-    public ?CarrierInfo $carrierInfo;
 
     public function __construct(
         ?bool $valid,
@@ -423,7 +421,9 @@ class DataVerifierPhone {
         ?string $phone,
         ?string $prefix,
         ?string $number,
+        ?string $lineType,
         ?string $country,
+        ?string $countryCode,
         ?array $plugins,
         ?CarrierInfo $carrierInfo
     ) {
@@ -432,10 +432,11 @@ class DataVerifierPhone {
         $this->phone = $phone;
         $this->prefix = $prefix;
         $this->number = $number;
+        $this->lineType = $lineType;
+        $this->carrierInfo = $carrierInfo;
         $this->country = $country;
         $this->countryCode = $countryCode;
         $this->plugins = $plugins;
-        $this->carrierInfo = $carrierInfo;
     }
 }
 
