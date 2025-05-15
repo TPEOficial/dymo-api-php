@@ -413,6 +413,7 @@ class DataVerifierPhone {
     public ?string $prefix;
     public ?string $number;
     public ?string $country;
+    public ?string $countryCode;
     public ?array $plugins;
     public ?CarrierInfo $carrierInfo;
 
@@ -432,6 +433,7 @@ class DataVerifierPhone {
         $this->prefix = $prefix;
         $this->number = $number;
         $this->country = $country;
+        $this->countryCode = $countryCode;
         $this->plugins = $plugins;
         $this->carrierInfo = $carrierInfo;
     }
