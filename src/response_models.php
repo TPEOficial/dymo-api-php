@@ -7,6 +7,7 @@ namespace Dymo\Models;
 enum VerifyPlugins: string {
     case COMPROMISE_DETECTOR = "compromiseDetector";
     case NSFW = "nsfw";
+    case REACHABLE = "reachable";
     case REPUTATION = "reputation";
     case TOR_NETWORK = "torNetwork";
     case TYPOSQUATTING = "typosquatting";
@@ -350,6 +351,7 @@ class DataVerifierEmail {
     public ?string $email;
     public ?string $realUser;
     public ?string $didYouMean;
+    public ?string $noReply;
     public ?bool $customTLD;
     public ?string $domain;
     public ?bool $roleAccount;
@@ -364,6 +366,7 @@ class DataVerifierEmail {
         ?string $email,
         ?string $realUser,
         ?string $didYouMean,
+        ?string $noReply,
         ?bool $customTLD,
         ?string $domain,
         ?bool $roleAccount,
@@ -377,6 +380,7 @@ class DataVerifierEmail {
         $this->email = $email;
         $this->realUser = $realUser;
         $this->didYouMean = $didYouMean;
+        $this->noReply = $noReply;
         $this->customTLD = $customTLD;
         $this->domain = $domain;
         $this->roleAccount = $roleAccount;
