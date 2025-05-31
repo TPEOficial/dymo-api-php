@@ -247,6 +247,23 @@ class DymoAPI {
     }
 
     /**
+     * Extract structured data from plain text using the Textly extraction endpoint.
+     *
+     * @param Textly $data The input data to send to the API. It should include:
+     *                     - 'data': A string of raw text.
+     *                     - 'format': An associative array representing the schema to extract.
+     * @return ExtractWithTextlyResponse The structured data extracted from the text.
+     *
+     * @throws Exception If the request fails or the API returns an error.
+     *
+     * [Documentation](https://docs.tpeoficial.com/docs/dymo-api/private/extract-textly)
+     */
+    public function extractWithTextly(Textly $data): ExtractWithTextly {
+        $responseData = $this->getFunction("private", "extract_with_textly")(array_merge($data));
+        return new ExtractWithTextly($responseData);
+    }
+
+    /**
      * Get prayer times for a given country and timezone.
      *
      * @param PrayerTimesData $data The data to send to the API.

@@ -599,3 +599,11 @@ class SRNGResponse {
         $this->executionTime = $executionTime;
     }
 }
+
+class ExtractWithTextlyResponse {
+    public array $data;
+
+    public function __construct(array $data) {
+        $this->data = $data;
+    }
+}

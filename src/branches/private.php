@@ -216,4 +216,55 @@ function get_random($token, $data) {
     return json_decode($response, true);
 }
 
+/**
+ * Extracts structured data from a plain text input using a specified format schema.
+ *
+ * This function sends a request to the Textly extraction endpoint.
+ * It requires a valid API token and a data array containing the plain text and extraction format.
+ *
+ * Required fields in $data:
+ * - `data`: The input plain text to be processed (string).
+ * - `format`: An associative array describing the schema to extract.
+ *
+ * @param string $token The API token for authorization.
+ * @param array $data An associative array with 'data' (text) and 'format' (schema).
+ * @return mixed The response from the API, decoded from JSON.
+ *
+ * @throws BadRequestError If required parameters are missing or invalid.
+ * @throws APIError If the API request fails or the response is not valid.
+ */
+function extract_with_textly(string $token, array $data): mixed {
+    if (empty($data["data"])) throw new BadRequestError("No data provided.");
+    if (empty($data["format"]) || !is_array($data["format"])) throw new BadRequestError("No format provided or format is not valid.");
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, BASE_URL . "/v1/private/textly/extract");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        "Authorization: $token",
+        "Content-Type: application/json",
+        "User-Agent: DymoAPISDK/1.0.0"
+    ]);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+    if (curl_errno($ch)) {
+        $error = curl_error($ch);
+        curl_close($ch);
+        throw new APIError("Curl error: $error");
+    }
+
+    curl_close($ch);
+
+    if ($httpCode < 200 || $httpCode >= 300) throw new APIError("API request failed with status code: $httpCode. Response: $response");
+
+    $decoded = json_decode($response, true);
+    if (json_last_error() !== JSON_ERROR_NONE) throw new APIError("Failed to parse API response: " . json_last_error_msg());
+
+    return $decoded;
+}
+
 ?>
