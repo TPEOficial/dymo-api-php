@@ -118,6 +118,7 @@ class DymoAPI {
      *
      * The API will check the following data types:
      *
+     * - URL
      * - Email
      * - Phone
      * - Domain
@@ -126,7 +127,14 @@ class DymoAPI {
      * - Wallet
      *
      * The API will return the following information for each data type:
-     *
+     * - URL:
+     *   - `valid`: Whether the domain is valid.
+     *   - `fraud`: Whether the domain is considered fraudulent.
+     *   - `freeSubdomain`: Whether the domain is a free subdomain.
+     *   - `customTLD`: Whether the domain has a custom top-level domain.
+     *   - `url`: The validated URL.
+     *   - `domain`: The validated domain.
+     *   - `plugins`: The plugins used to validate the domain.
      * - Email:
      *   - `valid`: Whether the email is valid.
      *   - `fraud`: Whether the email is considered fraudulent.
@@ -149,6 +157,8 @@ class DymoAPI {
      * - Domain:
      *   - `valid`: Whether the domain is valid.
      *   - `fraud`: Whether the domain is considered fraudulent.
+     *   - `freeSubdomain`: Whether the domain is a free subdomain.
+     *   - `customTLD`: Whether the domain has a custom top-level domain.
      *   - `domain`: The validated domain.
      *   - `plugins`: The plugins used to validate the domain.
      * - Credit Card:
@@ -182,6 +192,15 @@ class DymoAPI {
             unset($response["ip"]["class"]);
         }
         return new DataVerifierResponse(
+            new DataVerifierURL(
+                $response["url"]["valid"] ?? null,
+                $response["url"]["fraud"] ?? null,
+                $response["url"]["freeSubdomain"] ?? null,
+                $response["url"]["customTLD"] ?? null,
+                $response["url"]["url"] ?? 
+                $response["url"]["domain"] ?? null,
+                $response["url"]["plugins"] ?? null
+            ),
             new DataVerifierEmail(
                 $response["email"]["valid"] ?? null,
                 $response["email"]["fraud"] ?? null,
@@ -206,6 +225,8 @@ class DymoAPI {
             new DataVerifierDomain(
                 $response["domain"]["valid"] ?? null,
                 $response["domain"]["fraud"] ?? null,
+                $response["domain"]["freeSubdomain"] ?? null,
+                $response["domain"]["customTLD"] ?? null,
                 $response["domain"]["domain"] ?? null,
                 $response["domain"]["plugins"] ?? null
             )

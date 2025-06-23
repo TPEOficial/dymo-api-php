@@ -66,7 +66,7 @@ require_once "../exceptions.php";
  * @return DataVerifierResponse The response from the API with validation details.
  */
 function is_valid_data($token, $data) {
-    if (!array_reduce(["email", "phone", "domain", "creditCard", "ip", "wallet"], function ($carry, $key) use ($data) { return $carry || array_key_exists($key, $data); }, false)) throw new BadRequestError("You must provide at least one parameter.");
+    if (!array_reduce(["url", "email", "phone", "domain", "creditCard", "ip", "wallet"], function ($carry, $key) use ($data) { return $carry || array_key_exists($key, $data); }, false)) throw new BadRequestError("You must provide at least one parameter.");
     try {
         $ch = curl_init(BASE_URL . "/v1/private/secure/verify");
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

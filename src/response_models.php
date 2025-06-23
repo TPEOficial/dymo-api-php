@@ -342,6 +342,26 @@ class PrayerTimesResponse {
     }
 }
 
+class DataVerifierURL {
+    public ?bool $valid;
+    public ?bool $fraud;
+    public ?bool $freeSubdomain;
+    public ?bool $customTLD;
+    public ?string $url;
+    public ?string $domain;
+    public ?array $plugins;
+
+    public function __construct(?bool $valid, ?bool $fraud, ?bool $freeSubdomain, ?bool $customTLD, ?string $url, ?string $domain, ?array $plugins) {
+        $this->valid = $valid;
+        $this->fraud = $fraud;
+        $this->freeSubdomain = $freeSubdomain;
+        $this->customTLD = $customTLD;
+        $this->url = $url;
+        $this->domain = $domain;
+        $this->plugins = $plugins;
+    }
+}
+
 class DataVerifierEmail {
     public ?bool $valid;
     public ?bool $fraud;
@@ -468,25 +488,31 @@ class DataVerifierWallet {
 class DataVerifierDomain {
     public ?bool $valid;
     public ?bool $fraud;
+    public ?bool $freeSubdomain;
+    public ?bool $customTLD;
     public ?string $domain;
     public ?array $plugins;
 
-    public function __construct(?bool $valid, ?bool $fraud, ?string $domain, ?array $plugins) {
+    public function __construct(?bool $valid, ?bool $fraud, ?bool $freeSubdomain, ?bool $customTLD, ?string $domain, ?array $plugins) {
         $this->valid = $valid;
         $this->fraud = $fraud;
+        $this->freeSubdomain = $freeSubdomain;
+        $this->customTLD = $customTLD;
         $this->domain = $domain;
         $this->plugins = $plugins;
     }
 }
 
 class DataVerifierResponse {
+    public DataVerifierURL $url;
     public DataVerifierEmail $email;
     public DataVerifierPhone $phone;
     public DataVerifierDomain $domain;
     public DataVerifierIp $ip;
     public DataVerifierWallet $wallet;
 
-    public function __construct(DataVerifierEmail $email, DataVerifierPhone $phone, DataVerifierDomain $domain, DataVerifierIp $ip, DataVerifierWallet $wallet) {
+    public function __construct(DataVerifierURL $url, DataVerifierEmail $email, DataVerifierPhone $phone, DataVerifierDomain $domain, DataVerifierIp $ip, DataVerifierWallet $wallet) {
+        $this->url = $url;
         $this->email = $email;
         $this->phone = $phone;
         $this->domain = $domain;
