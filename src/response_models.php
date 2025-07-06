@@ -47,6 +47,7 @@ class Validator {
     public ?CreditCardData $creditCardData;
     public ?string $ip;
     public ?string $wallet;
+    public ?string $userAgent;
     public ?array $plugins;
 
     public function __construct(
@@ -57,6 +58,7 @@ class Validator {
         ?CreditCardData $creditCardData,
         ?string $ip,
         ?string $wallet,
+        ?string $userAgent,
         ?array $plugins
     ) {
         $this->email = $email;
@@ -66,9 +68,8 @@ class Validator {
         $this->creditCardData = $creditCardData;
         $this->ip = $ip;
         $this->wallet = $wallet;
-        if ($plugins) {
-            $this->setPlugins($plugins);
-        }
+        $this->userAgent = $userAgent;
+        if ($plugins) $this->setPlugins($plugins);
     }
 
     // Method to set and validate the 'plugins' array using enum.
@@ -503,6 +504,49 @@ class DataVerifierDomain {
     }
 }
 
+class DataVerifierUserAgent {
+    public bool $valid;
+    public ?string $type;
+    public ?string $clientSlug;
+    public ?string $clientName;
+    public ?string $version;
+    public ?string $userAgent;
+    public ?bool $fraud;
+    public ?bool $bot;
+    public ?string $info;
+    public ?string $os;
+    public DataVerifierDevice $device;
+    public ?VerifyPluginsResponse $plugins;
+
+    public function __construct(
+        bool $valid,
+        ?string $type,
+        ?string $clientSlug,
+        ?string $clientName,
+        ?string $version,
+        ?string $userAgent,
+        ?bool $fraud,
+        ?bool $bot,
+        ?string $info,
+        ?string $os,
+        DataVerifierDevice $device,
+        ?VerifyPluginsResponse $plugins
+    ) {
+        $this->valid = $valid;
+        $this->type = $type;
+        $this->clientSlug = $clientSlug;
+        $this->clientName = $clientName;
+        $this->version = $version;
+        $this->userAgent = $userAgent;
+        $this->fraud = $fraud;
+        $this->bot = $bot;
+        $this->info = $info;
+        $this->os = $os;
+        $this->device = $device;
+        $this->plugins = $plugins;
+    }
+}
+
 class DataVerifierResponse {
     public DataVerifierURL $url;
     public DataVerifierEmail $email;
@@ -510,14 +554,16 @@ class DataVerifierResponse {
     public DataVerifierDomain $domain;
     public DataVerifierIp $ip;
     public DataVerifierWallet $wallet;
+    public DataVerifierUserAgent $userAgent;
 
-    public function __construct(DataVerifierURL $url, DataVerifierEmail $email, DataVerifierPhone $phone, DataVerifierDomain $domain, DataVerifierIp $ip, DataVerifierWallet $wallet) {
+    public function __construct(DataVerifierURL $url, DataVerifierEmail $email, DataVerifierPhone $phone, DataVerifierDomain $domain, DataVerifierIp $ip, DataVerifierWallet $wallet, DataVerifierUserAgent $userAgent) {
         $this->url = $url;
         $this->email = $email;
         $this->phone = $phone;
         $this->domain = $domain;
         $this->ip = $ip;
         $this->wallet = $wallet;
+        $this->userAgent = $userAgent;
     }
 }
 
@@ -556,9 +602,7 @@ class EmailOptions {
         ?bool $compileToCssSafe = false,
         ?bool $onlyVerifiedEmails = false
     ) {
-        if ($priority !== null && !in_array($priority, [self::PRIORITY_HIGH, self::PRIORITY_NORMAL, self::PRIORITY_LOW])) {
-            $priority = null; // Assigning null if the priority value is invalid
-        }
+        if ($priority !== null && !in_array($priority, [self::PRIORITY_HIGH, self::PRIORITY_NORMAL, self::PRIORITY_LOW])) $priority = null; // Assigning null if the priority value is invalid
         $this->priority = $priority;
         $this->composeTailwindClasses = $composeTailwindClasses;
         $this->compileToCssSafe = $compileToCssSafe;

@@ -60,13 +60,26 @@ require_once "../exceptions.php";
  *   - `fraud`: Whether the wallet is considered fraudulent.
  *   - `wallet`: The validated wallet address.
  *   - `plugins`: The plugins used to validate the wallet.
+ * - User Agent:
+ *   - `valid`: Whether the user agent is valid.
+ *   - `type`: The type of client (e.g., browser, bot).
+ *   - `clientSlug`: A short identifier for the client.
+ *   - `clientName`: The name of the client software.
+ *   - `version`: The version of the client.
+ *   - `userAgent`: The validated user agent.
+ *   - `fraud`: Whether the user agent is considered fraudulent.
+ *   - `bot`: Whether the user agent is a bot.
+ *   - `info`: Additional info about the user agent.
+ *   - `os`: The operating system reported by the user agent.
+ *   - `device`: The device info, including type and brand.
+ *   - `plugins`: The plugins used to validate the user agent.
  *
  * @param string $token The API key to validate the data.
  * @param array $data The data to validate.
  * @return DataVerifierResponse The response from the API with validation details.
  */
 function is_valid_data($token, $data) {
-    if (!array_reduce(["url", "email", "phone", "domain", "creditCard", "ip", "wallet"], function ($carry, $key) use ($data) { return $carry || array_key_exists($key, $data); }, false)) throw new BadRequestError("You must provide at least one parameter.");
+    if (!array_reduce(["url", "email", "phone", "domain", "creditCard", "ip", "wallet", "userAgent"], function ($carry, $key) use ($data) { return $carry || array_key_exists($key, $data); }, false)) throw new BadRequestError("You must provide at least one parameter.");
     try {
         $ch = curl_init(BASE_URL . "/v1/private/secure/verify");
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
