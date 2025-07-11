@@ -9,6 +9,7 @@ enum VerifyPlugins: string {
     case NSFW = "nsfw";
     case REACHABLE = "reachable";
     case REPUTATION = "reputation";
+    case RISK_SCORE = "riskScore";
     case TOR_NETWORK = "torNetwork";
     case TYPOSQUATTING = "typosquatting";
     case URL_SHORTENER = "urlShortener";
@@ -587,9 +588,9 @@ class Attachment {
 }
 
 class EmailOptions {
-    public const PRIORITY_HIGH = 'high';
-    public const PRIORITY_NORMAL = 'normal';
-    public const PRIORITY_LOW = 'low';
+    public const PRIORITY_HIGH = "high";
+    public const PRIORITY_NORMAL = "normal";
+    public const PRIORITY_LOW = "low";
 
     public ?string $priority;
     public ?bool $composeTailwindClasses;
