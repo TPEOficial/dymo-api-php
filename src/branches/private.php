@@ -108,6 +108,92 @@ function is_valid_data($token, $data) {
 }
 
 /**
+ * Validate an email using the Data Verifier API with deny rules.
+ *
+ * This function checks the given email against configurable deny rules
+ * and returns a boolean indicating whether the email passes all checks.
+ *
+ * The API will validate the email and apply optional plugins for:
+ * - MX Records ("NO_MX_RECORDS")
+ * - Reachability ("NO_REACHABLE")
+ * - High Risk Score ("HIGH_RISK_SCORE")
+ *
+ * Deny rules (some are PREMIUM ⚠️):
+ * - "FRAUD"
+ * - "INVALID"
+ * - "NO_MX_RECORDS" ⚠️
+ * - "PROXIED_EMAIL"
+ * - "FREE_SUBDOMAIN"
+ * - "PERSONAL_EMAIL"
+ * - "CORPORATE_EMAIL"
+ * - "NO_REPLY_EMAIL"
+ * - "ROLE_ACCOUNT"
+ * - "NO_REACHABLE" ⚠️
+ * - "HIGH_RISK_SCORE" ⚠️
+ *
+ * @param {string | null} token - The API key to authenticate the request.
+ * @param {string} email - The email address to validate.
+ * @param {{ deny: string[] }} [rules] - Optional deny rules to apply.
+ * @returns {Promise<boolean>} True if the email passes all deny rules, false otherwise.
+ *
+ * @throws {APIError} If the token is null or the request fails.
+ *
+ * @example
+ * const valid = await isValidEmail(apiToken, "user@example.com", { deny: ["FRAUD", "NO_MX_RECORDS"] });
+ *
+ * @see [Documentation](https://docs.tpeoficial.com/docs/dymo-api/private/data-verifier)
+ */
+function is_valid_email($token, $email, $rules = null) {
+    if ($rules === null) $rules = ["deny" => ["FRAUD", "INVALID", "NO_MX_RECORDS", "NO_REPLY_EMAIL"]];
+
+    $plugins = [];
+    if (in_array("NO_MX_RECORDS", $rules["deny"])) $plugins[] = "mxRecords";
+    if (in_array("NO_REACHABLE", $rules["deny"])) $plugins[] = "reachability";
+    if (in_array("HIGH_RISK_SCORE", $rules["deny"])) $plugins[] = "riskScore";
+
+    $payload = ["email" => $email, "plugins" => $plugins];
+
+    try {
+        $ch = curl_init(BASE_URL . "/v1/private/secure/verify");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "Authorization: $token",
+            "Content-Type: application/json",
+            "User-Agent: DymoAPISDK/1.0.0"
+        ]);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+
+        $response = curl_exec($ch);
+        if (curl_errno($ch)) throw new BadRequestError(curl_error($ch));
+
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($httpCode >= 400) throw new BadRequestError("Error: HTTP $httpCode");
+
+        $response = json_decode($response, true);
+        $deny = $rules["deny"];
+
+        if (in_array("INVALID", $deny) && empty($response["valid"])) return false;
+        if (in_array("FRAUD", $deny) && !empty($response["fraud"])) return false;
+        if (in_array("PROXIED_EMAIL", $deny) && !empty($response["proxiedEmail"])) return false;
+        if (in_array("FREE_SUBDOMAIN", $deny) && !empty($response["freeSubdomain"])) return false;
+        if (in_array("PERSONAL_EMAIL", $deny) && empty($response["corporate"])) return false;
+        if (in_array("CORPORATE_EMAIL", $deny) && !empty($response["corporate"])) return false;
+        if (in_array("NO_MX_RECORDS", $deny) && empty($response["plugins"]["mxRecords"])) return false;
+        if (in_array("NO_REPLY_EMAIL", $deny) && !empty($response["noReply"])) return false;
+        if (in_array("ROLE_ACCOUNT", $deny) && !empty($response["plugins"]["roleAccount"])) return false;
+        if (in_array("NO_REACHABLE", $deny) && empty($response["plugins"]["reachable"])) return false;
+        if (in_array("HIGH_RISK_SCORE", $deny) && ($response["plugins"]["riskScore"] ?? 0) >= 80) return false;
+        return true;
+
+    } catch (BadRequestError $e) {
+        throw new InternalServerError($e->getMessage());
+    }
+}
+
+/**
  * Sends an email using the provided data through the email sender API.
  *
  * This function requires the following data parameters:

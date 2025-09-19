@@ -234,6 +234,37 @@ class DymoAPI {
     }
 
     /**
+     * Validates an email using the Data Verifier API.
+     *
+     * This function is a wrapper around the internal API function `is_valid_email`.
+     * It simply calls the internal function with the given email and returns
+     * the result. All validation logic is handled by the internal function.
+     *
+     * Deny rules (some are PREMIUM ⚠️):
+     * - "FRAUD", "INVALID", "NO_MX_RECORDS" ⚠️, "PROXIED_EMAIL" ⚠️, "FREE_SUBDOMAIN" ⚠️,
+     *   "PERSONAL_EMAIL", "CORPORATE_EMAIL", "NO_REPLY_EMAIL", "ROLE_ACCOUNT",
+     *   "NO_REACHABLE" ⚠️, "HIGH_RISK_SCORE" ⚠️
+     *
+     * @param string $email The email address to validate.
+     * @param array|null $rules Optional array of deny rules. If not provided, defaults to:
+     *                          ["FRAUD", "INVALID", "NO_MX_RECORDS", "NO_REPLY_EMAIL"].
+     *
+     * @return bool True if the email passes validation, false otherwise.
+     *
+     * @throws APIException If the token is missing, invalid, or the validation request fails.
+     *
+     * @example
+     * $valid = $client->isValidEmail("user@example.com");
+     * $validWithRules = $client->isValidEmail("user@example.com", ["FRAUD", "NO_MX_RECORDS"]);
+     *
+     * @see https://docs.tpeoficial.com/docs/dymo-api/private/data-verifier
+     */
+    public function isValidEmail(string $email, ?array $rules = null): bool
+    {
+        return $this->getFunction("private", "is_valid_email")($email, $rules);
+    }
+
+    /**
      * Send an email using the Dymo API.
      *
      * @param SendEmail $data The data to send to the API.
