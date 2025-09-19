@@ -144,8 +144,6 @@ function is_valid_data($token, $data) {
  * @see [Documentation](https://docs.tpeoficial.com/docs/dymo-api/private/data-verifier)
  */
 function is_valid_email($token, $email, $rules = null) {
-    if ($rules === null) $rules = ["deny" => ["FRAUD", "INVALID", "NO_MX_RECORDS", "NO_REPLY_EMAIL"]];
-
     $plugins = [];
     if (in_array("NO_MX_RECORDS", $rules["deny"])) $plugins[] = "mxRecords";
     if (in_array("NO_REACHABLE", $rules["deny"])) $plugins[] = "reachability";
