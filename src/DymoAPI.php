@@ -53,7 +53,6 @@ class DymoAPI {
         $this->apiKey = $config["api_key"] ?? null;
         $this->serverEmailConfig = $config["server_email_config"] ?? null;
 
-
         $defaultRules = [
             "email" => [
                 "deny" => ["FRAUD", "INVALID", "NO_MX_RECORDS", "NO_REPLY_EMAIL"]
