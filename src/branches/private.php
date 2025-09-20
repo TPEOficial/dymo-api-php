@@ -144,6 +144,9 @@ function is_valid_data($token, $data) {
  * @see [Documentation](https://docs.tpeoficial.com/docs/dymo-api/private/data-verifier)
  */
 function is_valid_email($token, $email, $rules = null) {
+    if ($token === null) throw new BadRequestError("Invalid private token.");
+    if (empty($rules["deny"])) throw new BadRequestError("You must provide at least one deny rule.");
+
     $plugins = [];
     if (in_array("NO_MX_RECORDS", $rules["deny"])) $plugins[] = "mxRecords";
     if (in_array("NO_REACHABLE", $rules["deny"])) $plugins[] = "reachability";
@@ -172,19 +175,26 @@ function is_valid_email($token, $email, $rules = null) {
 
         $response = json_decode($response, true);
         $deny = $rules["deny"];
+        $reasons = [];
 
-        if (in_array("INVALID", $deny) && empty($response["valid"])) return false;
-        if (in_array("FRAUD", $deny) && !empty($response["fraud"])) return false;
-        if (in_array("PROXIED_EMAIL", $deny) && !empty($response["proxiedEmail"])) return false;
-        if (in_array("FREE_SUBDOMAIN", $deny) && !empty($response["freeSubdomain"])) return false;
-        if (in_array("PERSONAL_EMAIL", $deny) && empty($response["corporate"])) return false;
-        if (in_array("CORPORATE_EMAIL", $deny) && !empty($response["corporate"])) return false;
-        if (in_array("NO_MX_RECORDS", $deny) && empty($response["plugins"]["mxRecords"])) return false;
-        if (in_array("NO_REPLY_EMAIL", $deny) && !empty($response["noReply"])) return false;
-        if (in_array("ROLE_ACCOUNT", $deny) && !empty($response["plugins"]["roleAccount"])) return false;
-        if (in_array("NO_REACHABLE", $deny) && empty($response["plugins"]["reachable"])) return false;
-        if (in_array("HIGH_RISK_SCORE", $deny) && ($response["plugins"]["riskScore"] ?? 0) >= 80) return false;
-        return true;
+        if (in_array("INVALID", $deny) && empty($response["valid"])) $reasons[] = "INVALID";
+        if (in_array("FRAUD", $deny) && !empty($response["fraud"])) $reasons[] = "FRAUD";
+        if (in_array("PROXIED_EMAIL", $deny) && !empty($response["proxiedEmail"])) $reasons[] = "PROXIED_EMAIL";
+        if (in_array("FREE_SUBDOMAIN", $deny) && !empty($response["freeSubdomain"])) $reasons[] = "FREE_SUBDOMAIN";
+        if (in_array("PERSONAL_EMAIL", $deny) && empty($response["corporate"])) $reasons[] = "PERSONAL_EMAIL";
+        if (in_array("CORPORATE_EMAIL", $deny) && !empty($response["corporate"])) $reasons[] = "CORPORATE_EMAIL";
+        if (in_array("NO_MX_RECORDS", $deny) && empty($response["plugins"]["mxRecords"])) $reasons[] = "NO_MX_RECORDS";
+        if (in_array("NO_REPLY_EMAIL", $deny) && !empty($response["noReply"])) $reasons[] = "NO_REPLY_EMAIL";
+        if (in_array("ROLE_ACCOUNT", $deny) && !empty($response["plugins"]["roleAccount"])) $reasons[] = "ROLE_ACCOUNT";
+        if (in_array("NO_REACHABLE", $deny) && empty($response["plugins"]["reachable"])) $reasons[] = "NO_REACHABLE";
+        if (in_array("HIGH_RISK_SCORE", $deny) && ($response["plugins"]["riskScore"] ?? 0) >= 80) $reasons[] = "HIGH_RISK_SCORE";
+
+        return [
+            "email" => $response["email"] ?? $email,
+            "allow" => count($reasons) === 0,
+            "reasons" => $reasons,
+            "response" => $response
+        ];
 
     } catch (BadRequestError $e) {
         throw new InternalServerError($e->getMessage());
