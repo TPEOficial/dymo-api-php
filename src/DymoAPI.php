@@ -44,6 +44,7 @@ class DymoAPI {
      * @param string $config["api_key"] The API key.
      * @param array $config["server_email_config"] The server email configuration.
      * @param array $config["rules"]["email"] The email validation rules.
+     * @param array $config["rules"]["sensitiveInfo"] The sensitive information validation rules.
      * @param string $config["base_url"] Whether to use the local development server.
      */
     public function __construct($config = []) {
@@ -51,11 +52,19 @@ class DymoAPI {
         $this->rootApiKey = $config["root_api_key"] ?? null;
         $this->apiKey = $config["api_key"] ?? null;
         $this->serverEmailConfig = $config["server_email_config"] ?? null;
-        $this->rules = $config["rules"] ?? [
+
+
+        $defaultRules = [
             "email" => [
-                "FRAUD", "INVALID", "NO_MX_RECORDS", "NO_REPLY_EMAIL"
+                "deny" => ["FRAUD", "INVALID", "NO_MX_RECORDS", "NO_REPLY_EMAIL"]
+            ],
+            "sensitiveInfo" => [
+                "deny" => ["EMAIL", "PHONE", "CREDIT_CARD"]
             ]
         ];
+
+        $this->rules = isset($config["rules"]) ? array_merge($defaultRules, $config["rules"]) : $defaultRules;
+
         $this->baseUrl = $config["base_url"] ?? "https://api.tpeoficial.com";
 
         $this->setBaseUrl($this->baseUrl);
