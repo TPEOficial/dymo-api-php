@@ -6,6 +6,7 @@ namespace Dymo\Models;
 
 enum VerifyPlugins: string {
     case COMPROMISE_DETECTOR = "compromiseDetector";
+    case MX_RECORDS = "mxRecords";
     case NSFW = "nsfw";
     case REACHABLE = "reachable";
     case REPUTATION = "reputation";
