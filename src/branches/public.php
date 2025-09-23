@@ -42,6 +42,8 @@ function get_prayer_times($data) {
 }
 
 /**
+ * DEPRECATED: Use satinize($input) instead.
+ * 
  * Sanitizes the input and returns it in various formats.
  *
  * The satinizer API processes the input data and returns a response
@@ -65,10 +67,56 @@ function get_prayer_times($data) {
  * @throws APIError If the API request fails or returns a non-200 status code.
  */
 function satinizer($data) {
+    trigger_error("Function satinizer() is deprecated and will be removed in future versions. Use satinize() instead.", E_USER_DEPRECATED);
     if (!isset($data["input"])) throw new BadRequestError("You must specify at least the input.");
     
     $input_value = $data["input"];
     $url = BASE_URL . "/v1/public/inputSatinizer?input=" . urlencode($input_value);
+    
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        "User-Agent: DymoAPISDK/1.0.0"
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    
+    if (curl_errno($ch)) throw new APIError(curl_error($ch));
+    
+    curl_close($ch);
+
+    if ($httpCode !== 200) throw new APIError("API request failed with status code: $httpCode");
+
+    return json_decode($response, true);
+}
+
+/**
+ * Sanitizes the input and returns it in various formats.
+ *
+ * The satinizer API processes the input data and returns a response
+ * containing the sanitized input and various format representations.
+ *
+ * The response includes format details such as ASCII, Bitcoin address,
+ * C-like identifier, coordinates, credit card, date, Discord username,
+ * DOI, domain, E.164 phone number, email, emoji, Han unification, hashtag,
+ * hyphen word break, IPv6, IP, JIRA ticket, MAC address, name, number,
+ * PAN from GSTIN, password, port, telephone, text, and semantic version.
+ *
+ * Additionally, the response includes information on the presence of spaces,
+ * SQL and NoSQL keywords, letters, uppercase and lowercase letters, symbols,
+ * and digits in the input data.
+ *
+ * @param string $input The input string to sanitize.
+ *
+ * @return array The response containing sanitized data and formats.
+ *
+ * @throws BadRequestError If the input is not provided.
+ * @throws APIError If the API request fails or returns a non-200 status code.
+ */
+function satinize($input) {
+    if (!$input) throw new BadRequestError("You must specify the input.");
+    $url = BASE_URL . "/v1/public/inputSatinizer?input=" . urlencode($input);
     
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
