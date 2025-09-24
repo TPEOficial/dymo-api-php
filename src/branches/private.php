@@ -177,7 +177,14 @@ function is_valid_email($token, $email, $rules = null) {
         $deny = $rules["deny"];
         $reasons = [];
 
-        if (in_array("INVALID", $deny) && empty($response["valid"])) $reasons[] = "INVALID";
+        if (in_array("INVALID", $deny) && empty($response["valid"])) {
+            return [
+                "email" => $response["email"] ?? $email,
+                "allow" => false,
+                "reasons" => ["INVALID"],
+                "response" => $response
+            ];
+        }
         if (in_array("FRAUD", $deny) && !empty($response["fraud"])) $reasons[] = "FRAUD";
         if (in_array("PROXIED_EMAIL", $deny) && !empty($response["proxiedEmail"])) $reasons[] = "PROXIED_EMAIL";
         if (in_array("FREE_SUBDOMAIN", $deny) && !empty($response["freeSubdomain"])) $reasons[] = "FREE_SUBDOMAIN";
