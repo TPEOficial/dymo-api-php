@@ -50,6 +50,7 @@ class Validator {
     public ?string $ip;
     public ?string $wallet;
     public ?string $userAgent;
+    public ?string $iban;
     public ?array $plugins;
 
     public function __construct(
@@ -61,6 +62,7 @@ class Validator {
         ?string $ip,
         ?string $wallet,
         ?string $userAgent,
+        ?string $iban,
         ?array $plugins
     ) {
         $this->email = $email;
@@ -549,6 +551,46 @@ class DataVerifierUserAgent {
     }
 }
 
+class DataVerifierIBAN {
+    public bool $valid;
+    public ?bool $fraud;
+    public ?string $iban;
+    public ?string $bban;
+    public ?string $bic;
+    public ?string $country;
+    public ?string $countryCode;
+    public ?string $accountNumber;
+    public ?string $branchIdentifier;
+    public ?string $bankIdentifier;
+    public ?VerifyPluginsResponse $plugins;
+
+    public function __construct(
+        bool $valid,
+        ?bool $fraud = null,
+        ?string $iban = null,
+        ?string $bban = null,
+        ?string $bic = "unknown",
+        ?string $country = null,
+        ?string $countryCode = null,
+        ?string $accountNumber = null,
+        ?string $branchIdentifier = null,
+        ?string $bankIdentifier = null,
+        ?VerifyPluginsResponse $plugins = null
+    ) {
+        $this->valid = $valid;
+        $this->fraud = $fraud;
+        $this->iban = $iban;
+        $this->bban = $bban;
+        $this->bic = $bic;
+        $this->country = $country;
+        $this->countryCode = $countryCode;
+        $this->accountNumber = $accountNumber;
+        $this->branchIdentifier = $branchIdentifier;
+        $this->bankIdentifier = $bankIdentifier;
+        $this->plugins = $plugins;
+    }
+}
+
 class DataVerifierResponse {
     public DataVerifierURL $url;
     public DataVerifierEmail $email;
@@ -557,8 +599,9 @@ class DataVerifierResponse {
     public DataVerifierIp $ip;
     public DataVerifierWallet $wallet;
     public DataVerifierUserAgent $userAgent;
+    public DataVerifierIBAN $iban;
 
-    public function __construct(DataVerifierURL $url, DataVerifierEmail $email, DataVerifierPhone $phone, DataVerifierDomain $domain, DataVerifierIp $ip, DataVerifierWallet $wallet, DataVerifierUserAgent $userAgent) {
+    public function __construct(DataVerifierURL $url, DataVerifierEmail $email, DataVerifierPhone $phone, DataVerifierDomain $domain, DataVerifierIp $ip, DataVerifierWallet $wallet, DataVerifierUserAgent $userAgent, DataVerifierIBAN $iban) {
         $this->url = $url;
         $this->email = $email;
         $this->phone = $phone;
@@ -566,6 +609,7 @@ class DataVerifierResponse {
         $this->ip = $ip;
         $this->wallet = $wallet;
         $this->userAgent = $userAgent;
+        $this->iban = $iban;
     }
 }
 

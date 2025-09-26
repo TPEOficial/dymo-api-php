@@ -18,6 +18,8 @@ require_once "../exceptions.php";
  * - Credit Card
  * - IP Address
  * - Wallet
+ * - User Agent
+ * - IBAN
  *
  * The API will return the following information for each data type:
  *
@@ -73,13 +75,24 @@ require_once "../exceptions.php";
  *   - `os`: The operating system reported by the user agent.
  *   - `device`: The device info, including type and brand.
  *   - `plugins`: The plugins used to validate the user agent.
- *
+ * - IBAN:
+ *   - `valid`: Whether the IBAN is valid.
+ *   - `fraud`: Whether the IBAN is considered fraudulent.
+ *   - `iban`: The full IBAN string.
+ *   - `bban`: The Basic Bank Account Number part of the IBAN.
+ *   - `bic`: The BIC/SWIFT code of the bank (or "unknown" if not available).
+ *   - `country`: The country name associated with the IBAN.
+ *   - `countryCode`: The ISO 3166-1 alpha-2 country code.
+ *   - `accountNumber`: The account number portion of the IBAN.
+ *   - `branchIdentifier`: The branch code of the bank (if available).
+ *   - `bankIdentifier`: The bank code portion of the IBAN.
+ *   - `plugins`: The plugins used to validate the IBAN.
  * @param string $token The API key to validate the data.
  * @param array $data The data to validate.
  * @return DataVerifierResponse The response from the API with validation details.
  */
 function is_valid_data($token, $data) {
-    if (!array_reduce(["url", "email", "phone", "domain", "creditCard", "ip", "wallet", "userAgent"], function ($carry, $key) use ($data) { return $carry || array_key_exists($key, $data); }, false)) throw new BadRequestError("You must provide at least one parameter.");
+    if (!array_reduce(["url", "email", "phone", "domain", "creditCard", "ip", "wallet", "userAgent", "iban"], function ($carry, $key) use ($data) { return $carry || array_key_exists($key, $data); }, false)) throw new BadRequestError("You must provide at least one parameter.");
     try {
         $ch = curl_init(BASE_URL . "/v1/private/secure/verify");
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
