@@ -28,7 +28,9 @@ function get_prayer_times($data) {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        "User-Agent: DymoAPISDK/1.0.0"
+        "User-Agent: DymoAPISDK/1.0.0",
+        "X-Dymo-SDK-Env: PHP",
+        "X-Dymo-SDK-Version: 0.0.28"
     ]);
     
     $response = curl_exec($ch);
@@ -76,7 +78,9 @@ function satinizer($data) {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        "User-Agent: DymoAPISDK/1.0.0"
+        "User-Agent: DymoAPISDK/1.0.0",
+        "X-Dymo-SDK-Env: PHP",
+        "X-Dymo-SDK-Version: 0.0.28"
     ]);
     
     $response = curl_exec($ch);
@@ -121,7 +125,9 @@ function satinize($input) {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        "User-Agent: DymoAPISDK/1.0.0"
+        "User-Agent: DymoAPISDK/1.0.0",
+        "X-Dymo-SDK-Env: PHP",
+        "X-Dymo-SDK-Version: 0.0.28"
     ]);
     
     $response = curl_exec($ch);
@@ -187,7 +193,9 @@ function is_valid_pwd($data) {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        "User-Agent: DymoAPISDK/1.0.0"
+        "User-Agent: DymoAPISDK/1.0.0",
+        "X-Dymo-SDK-Env: PHP",
+        "X-Dymo-SDK-Version: 0.0.28"
     ]);
     
     $response = curl_exec($ch);
@@ -214,6 +222,11 @@ function new_url_encrypt($url) {
     
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        "User-Agent: DymoAPISDK/1.0.0",
+        "X-Dymo-SDK-Env: PHP",
+        "X-Dymo-SDK-Version: 0.0.28"
+    ]);
     
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
