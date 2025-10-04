@@ -101,7 +101,7 @@ function is_valid_data($token, $data) {
             "Content-Type: application/json", 
             "User-Agent: DymoAPISDK/1.0.0",
             "X-Dymo-SDK-Env: PHP",
-            "X-Dymo-SDK-Version: 0.0.28"
+            "X-Dymo-SDK-Version: 0.0.29"
         ]);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
@@ -143,6 +143,7 @@ function is_valid_data($token, $data) {
  * - "CORPORATE_EMAIL"
  * - "NO_REPLY_EMAIL"
  * - "ROLE_ACCOUNT"
+ * - "NO_GRAVATAR" ⚠️
  * - "NO_REACHABLE" ⚠️
  * - "HIGH_RISK_SCORE" ⚠️
  *
@@ -166,6 +167,7 @@ function is_valid_email($token, $email, $rules = null) {
     if (in_array("NO_MX_RECORDS", $rules["deny"])) $plugins[] = "mxRecords";
     if (in_array("NO_REACHABLE", $rules["deny"])) $plugins[] = "reachability";
     if (in_array("HIGH_RISK_SCORE", $rules["deny"])) $plugins[] = "riskScore";
+    if (in_array("NO_GRAVATAR", $rules["deny"])) $plugins[] = "gravatar";
 
     $payload = ["email" => $email, "plugins" => $plugins];
 
@@ -177,7 +179,7 @@ function is_valid_email($token, $email, $rules = null) {
             "Content-Type: application/json",
             "User-Agent: DymoAPISDK/1.0.0",
             "X-Dymo-SDK-Env: PHP",
-            "X-Dymo-SDK-Version: 0.0.28"
+            "X-Dymo-SDK-Version: 0.0.29"
         ]);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
@@ -212,6 +214,7 @@ function is_valid_email($token, $email, $rules = null) {
         if (in_array("ROLE_ACCOUNT", $deny) && !empty($response["plugins"]["roleAccount"])) $reasons[] = "ROLE_ACCOUNT";
         if (in_array("NO_REACHABLE", $deny) && empty($response["plugins"]["reachable"])) $reasons[] = "NO_REACHABLE";
         if (in_array("HIGH_RISK_SCORE", $deny) && ($response["plugins"]["riskScore"] ?? 0) >= 80) $reasons[] = "HIGH_RISK_SCORE";
+        if (in_array("NO_GRAVATAR", $deny) && empty($response["plugins"]["gravatar"])) $reasons[] = "NO_GRAVATAR";
 
         return [
             "email" => $response["email"] ?? $email,
@@ -285,7 +288,7 @@ function send_email($token, $data) {
         "Authorization: $token",
         "User-Agent: DymoAPISDK/1.0.0",
         "X-Dymo-SDK-Env: PHP",
-        "X-Dymo-SDK-Version: 0.0.28"
+        "X-Dymo-SDK-Version: 0.0.29"
     ]);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
     
@@ -338,7 +341,7 @@ function get_random($token, $data) {
         "Content-Type: application/json", 
         "User-Agent: DymoAPISDK/1.0.0",
         "X-Dymo-SDK-Env: PHP",
-        "X-Dymo-SDK-Version: 0.0.28"
+        "X-Dymo-SDK-Version: 0.0.29"
     ]);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
     
@@ -381,7 +384,7 @@ function extract_with_textly(string $token, array $data): mixed {
         "Content-Type: application/json",
         "User-Agent: DymoAPISDK/1.0.0",
         "X-Dymo-SDK-Env: PHP",
-        "X-Dymo-SDK-Version: 0.0.28"
+        "X-Dymo-SDK-Version: 0.0.29"
     ]);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
 

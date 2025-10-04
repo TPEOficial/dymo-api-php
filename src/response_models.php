@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Dymo\Models;
 
 enum VerifyPlugins: string {
+    case BLOCKLIST = "blocklist";
     case COMPROMISE_DETECTOR = "compromiseDetector";
+    case GRAVATAR_URL = "gravatarUrl";
     case MX_RECORDS = "mxRecords";
     case NSFW = "nsfw";
     case REACHABLE = "reachable";
@@ -14,7 +16,6 @@ enum VerifyPlugins: string {
     case TOR_NETWORK = "torNetwork";
     case TYPOSQUATTING = "typosquatting";
     case URL_SHORTENER = "urlShortener";
-    case BLOCKLIST = "blocklist";
 }
 
 class PhoneData {

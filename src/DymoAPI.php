@@ -257,7 +257,7 @@ class DymoAPI {
      * Deny rules (some are PREMIUM ⚠️):
      * - "FRAUD", "INVALID", "NO_MX_RECORDS" ⚠️, "PROXIED_EMAIL" ⚠️, "FREE_SUBDOMAIN" ⚠️,
      *   "PERSONAL_EMAIL", "CORPORATE_EMAIL", "NO_REPLY_EMAIL", "ROLE_ACCOUNT",
-     *   "NO_REACHABLE" ⚠️, "HIGH_RISK_SCORE" ⚠️
+     *   "NO_REACHABLE" ⚠️, "NO_GRAVATAR" ⚠️,"HIGH_RISK_SCORE" ⚠️
      *
      * @param string $email The email address to validate.
      * @param array|null $rules Optional array of deny rules. If not provided, defaults to:
