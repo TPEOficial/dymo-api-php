@@ -44,6 +44,7 @@ class DymoAPI {
      * @param string $config["api_key"] The API key.
      * @param array $config["server_email_config"] The server email configuration.
      * @param array $config["rules"]["email"] The email validation rules.
+     * @param array $config["rules"]["phone"] The phone validation rules.
      * @param array $config["rules"]["sensitiveInfo"] The sensitive information validation rules.
      * @param string $config["base_url"] Whether to use the local development server.
      */
@@ -56,6 +57,9 @@ class DymoAPI {
         $defaultRules = [
             "email" => [
                 "deny" => ["FRAUD", "INVALID", "NO_MX_RECORDS", "NO_REPLY_EMAIL"]
+            ],
+            "phone" => [
+                "deny" => ["FRAUD", "INVALID"]
             ],
             "sensitiveInfo" => [
                 "deny" => ["EMAIL", "PHONE", "CREDIT_CARD"]

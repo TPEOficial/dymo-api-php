@@ -104,7 +104,7 @@ function is_valid_data($token, $data) {
             "Content-Type: application/json", 
             "User-Agent: DymoAPISDK/1.0.0",
             "X-Dymo-SDK-Env: PHP",
-            "X-Dymo-SDK-Version: 0.0.30"
+            "X-Dymo-SDK-Version: 0.0.31"
         ]);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
@@ -223,7 +223,7 @@ function is_valid_data_raw($token, $data) {
             "Content-Type: application/json", 
             "User-Agent: DymoAPISDK/1.0.0",
             "X-Dymo-SDK-Env: PHP",
-            "X-Dymo-SDK-Version: 0.0.30"
+            "X-Dymo-SDK-Version: 0.0.31"
         ]);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
@@ -301,7 +301,7 @@ function is_valid_email($token, $email, $rules = null) {
             "Content-Type: application/json",
             "User-Agent: DymoAPISDK/1.0.0",
             "X-Dymo-SDK-Env: PHP",
-            "X-Dymo-SDK-Version: 0.0.30"
+            "X-Dymo-SDK-Version: 0.0.31"
         ]);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
@@ -410,7 +410,7 @@ function send_email($token, $data) {
         "Authorization: $token",
         "User-Agent: DymoAPISDK/1.0.0",
         "X-Dymo-SDK-Env: PHP",
-        "X-Dymo-SDK-Version: 0.0.30"
+        "X-Dymo-SDK-Version: 0.0.31"
     ]);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
     
@@ -463,7 +463,7 @@ function get_random($token, $data) {
         "Content-Type: application/json", 
         "User-Agent: DymoAPISDK/1.0.0",
         "X-Dymo-SDK-Env: PHP",
-        "X-Dymo-SDK-Version: 0.0.30"
+        "X-Dymo-SDK-Version: 0.0.31"
     ]);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
     
@@ -506,7 +506,7 @@ function extract_with_textly(string $token, array $data): mixed {
         "Content-Type: application/json",
         "User-Agent: DymoAPISDK/1.0.0",
         "X-Dymo-SDK-Env: PHP",
-        "X-Dymo-SDK-Version: 0.0.30"
+        "X-Dymo-SDK-Version: 0.0.31"
     ]);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
 
