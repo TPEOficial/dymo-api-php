@@ -4,6 +4,8 @@ require_once "../config.php";
 require_once "../exceptions.php";
 
 /**
+ * DEPRECATED: Use is_valid_data_raw($data) instead.
+ * 
  * Validate the given data using the Data Verifier API.
  *
  * This function checks the validity of the given data and returns an
@@ -92,6 +94,7 @@ require_once "../exceptions.php";
  * @return DataVerifierResponse The response from the API with validation details.
  */
 function is_valid_data($token, $data) {
+    trigger_error("Function is_valid_data() is deprecated and will be modified in future versions. Use is_valid_data_raw() instead.", E_USER_DEPRECATED);
     if (!array_reduce(["url", "email", "phone", "domain", "creditCard", "ip", "wallet", "userAgent", "iban"], function ($carry, $key) use ($data) { return $carry || array_key_exists($key, $data); }, false)) throw new BadRequestError("You must provide at least one parameter.");
     try {
         $ch = curl_init(BASE_URL . "/v1/private/secure/verify");
@@ -101,7 +104,126 @@ function is_valid_data($token, $data) {
             "Content-Type: application/json", 
             "User-Agent: DymoAPISDK/1.0.0",
             "X-Dymo-SDK-Env: PHP",
-            "X-Dymo-SDK-Version: 0.0.29"
+            "X-Dymo-SDK-Version: 0.0.30"
+        ]);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+
+        $response = curl_exec($ch);
+
+        if (curl_errno($ch)) throw new BadRequestError(curl_error($ch));
+
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($httpCode >= 400) throw new BadRequestError("Error: HTTP $httpCode");
+
+        return json_decode($response, true);
+
+    } catch (BadRequestError $e) {
+        throw new InternalServerError($e->getMessage());
+    }
+}
+
+/**
+ * Validate the given data using the Data Verifier API.
+ *
+ * This function checks the validity of the given data and returns an
+ * `DataVerifierResponse` object containing the validation status, the
+ * validated data, and detailed information about each validation check.
+ *
+ * The API will check the following data types:
+ *
+ * - Email
+ * - Phone
+ * - Domain
+ * - Credit Card
+ * - IP Address
+ * - Wallet
+ * - User Agent
+ * - IBAN
+ *
+ * The API will return the following information for each data type:
+ *
+ * - Email:
+ *   - `valid`: Whether the email is valid.
+ *   - `fraud`: Whether the email is considered fraudulent.
+ *   - `freeSubdomain`: Whether the email is a free subdomain.
+ *   - `corporate`: Whether the email is a corporate email.
+ *   - `email`: The validated email address.
+ *   - `realUser`: Whether the email is a real user.
+ *   - `customTLD`: Whether the email has a custom top-level domain.
+ *   - `domain`: The domain of the email.
+ *   - `roleAccount`: Whether the email is a role account.
+ *   - `plugins`: The plugins used to validate the email.
+ * - Phone:
+ *   - `valid`: Whether the phone number is valid.
+ *   - `fraud`: Whether the phone number is considered fraudulent.
+ *   - `phone`: The validated phone number.
+ *   - `prefix`: The prefix of the phone number.
+ *   - `number`: The number of the phone number.
+ *   - `country`: The country of the phone number.
+ *   - `plugins`: The plugins used to validate the phone number.
+ * - Domain:
+ *   - `valid`: Whether the domain is valid.
+ *   - `fraud`: Whether the domain is considered fraudulent.
+ *   - `domain`: The validated domain.
+ *   - `plugins`: The plugins used to validate the domain.
+ * - Credit Card:
+ *   - `valid`: Whether the credit card is valid.
+ *   - `fraud`: Whether the credit card is considered fraudulent.
+ *   - `creditCard`: The validated credit card number.
+ *   - `plugins`: The plugins used to validate the credit card.
+ * - IP Address:
+ *   - `valid`: Whether the IP address is valid.
+ *   - `fraud`: Whether the IP address is considered fraudulent.
+ *   - `ip`: The validated IP address.
+ *   - `plugins`: The plugins used to validate the IP address.
+ * - Wallet:
+ *   - `valid`: Whether the wallet is valid.
+ *   - `fraud`: Whether the wallet is considered fraudulent.
+ *   - `wallet`: The validated wallet address.
+ *   - `plugins`: The plugins used to validate the wallet.
+ * - User Agent:
+ *   - `valid`: Whether the user agent is valid.
+ *   - `type`: The type of client (e.g., browser, bot).
+ *   - `clientSlug`: A short identifier for the client.
+ *   - `clientName`: The name of the client software.
+ *   - `version`: The version of the client.
+ *   - `userAgent`: The validated user agent.
+ *   - `fraud`: Whether the user agent is considered fraudulent.
+ *   - `bot`: Whether the user agent is a bot.
+ *   - `info`: Additional info about the user agent.
+ *   - `os`: The operating system reported by the user agent.
+ *   - `device`: The device info, including type and brand.
+ *   - `plugins`: The plugins used to validate the user agent.
+ * - IBAN:
+ *   - `valid`: Whether the IBAN is valid.
+ *   - `fraud`: Whether the IBAN is considered fraudulent.
+ *   - `iban`: The full IBAN string.
+ *   - `bban`: The Basic Bank Account Number part of the IBAN.
+ *   - `bic`: The BIC/SWIFT code of the bank (or "unknown" if not available).
+ *   - `country`: The country name associated with the IBAN.
+ *   - `countryCode`: The ISO 3166-1 alpha-2 country code.
+ *   - `accountNumber`: The account number portion of the IBAN.
+ *   - `branchIdentifier`: The branch code of the bank (if available).
+ *   - `bankIdentifier`: The bank code portion of the IBAN.
+ *   - `plugins`: The plugins used to validate the IBAN.
+ * @param string $token The API key to validate the data.
+ * @param array $data The data to validate.
+ * @return DataVerifierResponse The response from the API with validation details.
+ */
+function is_valid_data_raw($token, $data) {
+    if (!array_reduce(["url", "email", "phone", "domain", "creditCard", "ip", "wallet", "userAgent", "iban"], function ($carry, $key) use ($data) { return $carry || array_key_exists($key, $data); }, false)) throw new BadRequestError("You must provide at least one parameter.");
+    try {
+        $ch = curl_init(BASE_URL . "/v1/private/secure/verify");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "Authorization: $token", 
+            "Content-Type: application/json", 
+            "User-Agent: DymoAPISDK/1.0.0",
+            "X-Dymo-SDK-Env: PHP",
+            "X-Dymo-SDK-Version: 0.0.30"
         ]);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
@@ -179,7 +301,7 @@ function is_valid_email($token, $email, $rules = null) {
             "Content-Type: application/json",
             "User-Agent: DymoAPISDK/1.0.0",
             "X-Dymo-SDK-Env: PHP",
-            "X-Dymo-SDK-Version: 0.0.29"
+            "X-Dymo-SDK-Version: 0.0.30"
         ]);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
@@ -288,7 +410,7 @@ function send_email($token, $data) {
         "Authorization: $token",
         "User-Agent: DymoAPISDK/1.0.0",
         "X-Dymo-SDK-Env: PHP",
-        "X-Dymo-SDK-Version: 0.0.29"
+        "X-Dymo-SDK-Version: 0.0.30"
     ]);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
     
@@ -341,7 +463,7 @@ function get_random($token, $data) {
         "Content-Type: application/json", 
         "User-Agent: DymoAPISDK/1.0.0",
         "X-Dymo-SDK-Env: PHP",
-        "X-Dymo-SDK-Version: 0.0.29"
+        "X-Dymo-SDK-Version: 0.0.30"
     ]);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
     
@@ -384,7 +506,7 @@ function extract_with_textly(string $token, array $data): mixed {
         "Content-Type: application/json",
         "User-Agent: DymoAPISDK/1.0.0",
         "X-Dymo-SDK-Env: PHP",
-        "X-Dymo-SDK-Version: 0.0.29"
+        "X-Dymo-SDK-Version: 0.0.30"
     ]);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
 

@@ -124,6 +124,7 @@ class DymoAPI {
     }
 
     /**
+     * DEPRECATED: Use isValidDataRaw($data) instead.
      * Validate the given data using the Data Verifier API.
      *
      * This function checks the validity of the given data and returns an
@@ -199,6 +200,130 @@ class DymoAPI {
      */
     public function isValidData(Validator $data): DataVerifierResponse {
         $response = $this->getFunction("private", "is_valid_data")($data);
+        if (isset($response["ip"]["as"])) {
+            $response["ip"]["_as"] = $response["ip"]["as"];
+            $response["ip"]["_class"] = $response["ip"]["class"];
+            unset($response["ip"]["as"]);
+            unset($response["ip"]["class"]);
+        }
+        return new DataVerifierResponse(
+            new DataVerifierURL(
+                $response["url"]["valid"] ?? null,
+                $response["url"]["fraud"] ?? null,
+                $response["url"]["freeSubdomain"] ?? null,
+                $response["url"]["customTLD"] ?? null,
+                $response["url"]["url"] ?? 
+                $response["url"]["domain"] ?? null,
+                $response["url"]["plugins"] ?? null
+            ),
+            new DataVerifierEmail(
+                $response["email"]["valid"] ?? null,
+                $response["email"]["fraud"] ?? null,
+                $response["email"]["freeSubdomain"] ?? null,
+                $response["email"]["corporate"] ?? null,
+                $response["email"]["email"] ?? null,
+                $response["email"]["realUser"] ?? null,
+                $response["email"]["customTLD"] ?? null,
+                $response["email"]["domain"] ?? null,
+                $response["email"]["roleAccount"] ?? null,
+                $response["email"]["plugins"] ?? null
+            ),
+            new DataVerifierPhone(
+                $response["phone"]["valid"] ?? null,
+                $response["phone"]["fraud"] ?? null,
+                $response["phone"]["phone"] ?? null,
+                $response["phone"]["prefix"] ?? null,
+                $response["phone"]["number"] ?? null,
+                $response["phone"]["country"] ?? null,
+                $response["phone"]["plugins"] ?? null
+            ),
+            new DataVerifierDomain(
+                $response["domain"]["valid"] ?? null,
+                $response["domain"]["fraud"] ?? null,
+                $response["domain"]["freeSubdomain"] ?? null,
+                $response["domain"]["customTLD"] ?? null,
+                $response["domain"]["domain"] ?? null,
+                $response["domain"]["plugins"] ?? null
+            )
+        );
+    }
+
+    /**
+     * Validate the given data using the Data Verifier API.
+     *
+     * This function checks the validity of the given data and returns an
+     * `DataVerifierResponse` object containing the validation status, the
+     * validated data, and detailed information about each validation check.
+     *
+     * The API will check the following data types:
+     *
+     * - URL
+     * - Email
+     * - Phone
+     * - Domain
+     * - Credit Card
+     * - IP Address
+     * - Wallet
+     *
+     * The API will return the following information for each data type:
+     * - URL:
+     *   - `valid`: Whether the domain is valid.
+     *   - `fraud`: Whether the domain is considered fraudulent.
+     *   - `freeSubdomain`: Whether the domain is a free subdomain.
+     *   - `customTLD`: Whether the domain has a custom top-level domain.
+     *   - `url`: The validated URL.
+     *   - `domain`: The validated domain.
+     *   - `plugins`: The plugins used to validate the domain.
+     * - Email:
+     *   - `valid`: Whether the email is valid.
+     *   - `fraud`: Whether the email is considered fraudulent.
+     *   - `freeSubdomain`: Whether the email is a free subdomain.
+     *   - `corporate`: Whether the email is a corporate email.
+     *   - `email`: The validated email address.
+     *   - `realUser`: Whether the email is a real user.
+     *   - `customTLD`: Whether the email has a custom top-level domain.
+     *   - `domain`: The domain of the email.
+     *   - `roleAccount`: Whether the email is a role account.
+     *   - `plugins`: The plugins used to validate the email.
+     * - Phone:
+     *   - `valid`: Whether the phone number is valid.
+     *   - `fraud`: Whether the phone number is considered fraudulent.
+     *   - `phone`: The validated phone number.
+     *   - `prefix`: The prefix of the phone number.
+     *   - `number`: The number of the phone number.
+     *   - `country`: The country of the phone number.
+     *   - `plugins`: The plugins used to validate the phone number.
+     * - Domain:
+     *   - `valid`: Whether the domain is valid.
+     *   - `fraud`: Whether the domain is considered fraudulent.
+     *   - `freeSubdomain`: Whether the domain is a free subdomain.
+     *   - `customTLD`: Whether the domain has a custom top-level domain.
+     *   - `domain`: The validated domain.
+     *   - `plugins`: The plugins used to validate the domain.
+     * - Credit Card:
+     *   - `valid`: Whether the credit card is valid.
+     *   - `fraud`: Whether the credit card is considered fraudulent.
+     *   - `creditCard`: The validated credit card number.
+     *   - `plugins`: The plugins used to validate the credit card.
+     * - IP Address:
+     *   - `valid`: Whether the IP address is valid.
+     *   - `fraud`: Whether the IP address is considered fraudulent.
+     *   - `ip`: The validated IP address.
+     *   - `plugins`: The plugins used to validate the IP address.
+     * - Wallet:
+     *   - `valid`: Whether the wallet is valid.
+     *   - `fraud`: Whether the wallet is considered fraudulent.
+     *   - `wallet`: The validated wallet address.
+     *   - `plugins`: The plugins used to validate the wallet.
+     *
+     * @param string $token The API key to validate the data.
+     * @param Validator $data The data to validate.
+     * @return DataVerifierResponse The response from the API with validation details.
+     * 
+     * [Documentation](https://docs.tpeoficial.com/docs/dymo-api/private/data-verifier)
+     */
+    public function isValidDataRaw(Validator $data): DataVerifierResponse {
+        $response = $this->getFunction("private", "is_valid_data_raw")($data);
         if (isset($response["ip"]["as"])) {
             $response["ip"]["_as"] = $response["ip"]["as"];
             $response["ip"]["_class"] = $response["ip"]["class"];
