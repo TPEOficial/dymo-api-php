@@ -400,12 +400,42 @@ class DymoAPI {
      * $valid = $client->isValidEmail("user@example.com");
      * $validWithRules = $client->isValidEmail("user@example.com", ["FRAUD", "NO_MX_RECORDS"]);
      *
-     * @see https://docs.tpeoficial.com/docs/dymo-api/private/data-verifier
+     * @see https://docs.tpeoficial.com/docs/dymo-api/private/email-validation
      */
     public function isValidEmail(string $email, ?array $rules = null): bool
     {
         $rulesToUse = $rules ?? ($this->rules["email"] ?? ["FRAUD", "INVALID", "NO_MX_RECORDS", "NO_REPLY_EMAIL"]);
         return $this->getFunction("private", "is_valid_email")($email, $rulesToUse);
+    }
+
+    /**
+     * Validates an email using the Data Verifier API.
+     *
+     * This function is a wrapper around the internal API function `is_valid_email`.
+     * It simply calls the internal function with the given email and returns
+     * the result. All validation logic is handled by the internal function.
+     *
+     * Deny rules (some are PREMIUM ⚠️):
+     * - "FRAUD", "INVALID", "HIGH_RISK_SCORE" ⚠️
+     *
+     * @param string $phone The phone number to validate.
+     * @param array|null $rules Optional array of deny rules. If not provided, defaults to:
+     *                          ["FRAUD", "INVALID"].
+     *
+     * @return bool True if the email passes validation, false otherwise.
+     *
+     * @throws APIException If the token is missing, invalid, or the validation request fails.
+     *
+     * @example
+     * $valid = $client->isValidPhone("+34617509462");
+     * $validWithRules = $client->isValidPhone("+34617509462", ["FRAUD", "NO_MX_RECORDS"]);
+     *
+     * @see https://docs.tpeoficial.com/docs/dymo-api/private/phone-validation
+     */
+    public function isValidPhone(string $phone, ?array $rules = null): bool
+    {
+        $rulesToUse = $rules ?? ($this->rules["phone"] ?? ["FRAUD", "INVALID"]);
+        return $this->getFunction("private", "is_valid_phone")($phone, $rulesToUse);
     }
 
     /**

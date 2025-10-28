@@ -104,7 +104,7 @@ function is_valid_data($token, $data) {
             "Content-Type: application/json", 
             "User-Agent: DymoAPISDK/1.0.0",
             "X-Dymo-SDK-Env: PHP",
-            "X-Dymo-SDK-Version: 0.0.31"
+            "X-Dymo-SDK-Version: 0.0.32"
         ]);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
@@ -223,7 +223,7 @@ function is_valid_data_raw($token, $data) {
             "Content-Type: application/json", 
             "User-Agent: DymoAPISDK/1.0.0",
             "X-Dymo-SDK-Env: PHP",
-            "X-Dymo-SDK-Version: 0.0.31"
+            "X-Dymo-SDK-Version: 0.0.32"
         ]);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
@@ -279,7 +279,7 @@ function is_valid_data_raw($token, $data) {
  * @example
  * const valid = await isValidEmail(apiToken, "user@example.com", { deny: ["FRAUD", "NO_MX_RECORDS"] });
  *
- * @see [Documentation](https://docs.tpeoficial.com/docs/dymo-api/private/data-verifier)
+ * @see [Documentation](https://docs.tpeoficial.com/docs/dymo-api/private/email-validation)
  */
 function is_valid_email($token, $email, $rules = null) {
     if ($token === null) throw new BadRequestError("Invalid private token.");
@@ -301,7 +301,7 @@ function is_valid_email($token, $email, $rules = null) {
             "Content-Type: application/json",
             "User-Agent: DymoAPISDK/1.0.0",
             "X-Dymo-SDK-Env: PHP",
-            "X-Dymo-SDK-Version: 0.0.31"
+            "X-Dymo-SDK-Version: 0.0.32"
         ]);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
@@ -340,6 +340,89 @@ function is_valid_email($token, $email, $rules = null) {
 
         return [
             "email" => $response["email"] ?? $email,
+            "allow" => count($reasons) === 0,
+            "reasons" => $reasons,
+            "response" => $response
+        ];
+
+    } catch (BadRequestError $e) {
+        throw new InternalServerError($e->getMessage());
+    }
+}
+
+/**
+ * Validate an phone using the Data Verifier API with deny rules.
+ *
+ * This function checks the given phone against configurable deny rules
+ * and returns a boolean indicating whether the phone passes all checks.
+ *
+ * The API will validate the phone and apply optional plugins for:
+ * - High Risk Score ("HIGH_RISK_SCORE")
+ *
+ * Deny rules (some are PREMIUM ⚠️):
+ * - "FRAUD"
+ * - "INVALID"
+ * - "HIGH_RISK_SCORE" ⚠️
+ *
+ * @param {string | null} token - The API key to authenticate the request.
+ * @param {string} phone - The phone number to validate.
+ * @param {{ deny: string[] }} [rules] - Optional deny rules to apply.
+ * @returns {Promise<boolean>} True if the phone passes all deny rules, false otherwise.
+ *
+ * @throws {APIError} If the token is null or the request fails.
+ *
+ * @example
+ * const valid = await isValidPhone(apiToken, "+34617509462", { deny: ["FRAUD", "INVALID"] });
+ *
+ * @see [Documentation](https://docs.tpeoficial.com/docs/dymo-api/private/phone-validation)
+ */
+function is_valid_phone($token, $phone, $rules = null) {
+    if ($token === null) throw new BadRequestError("Invalid private token.");
+    if (empty($rules["deny"])) throw new BadRequestError("You must provide at least one deny rule.");
+
+    $plugins = [];
+    if (in_array("HIGH_RISK_SCORE", $rules["deny"])) $plugins[] = "riskScore";
+
+    $payload = ["phone" => $phone, "plugins" => $plugins];
+
+    try {
+        $ch = curl_init(BASE_URL . "/v1/private/secure/verify");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "Authorization: $token",
+            "Content-Type: application/json",
+            "User-Agent: DymoAPISDK/1.0.0",
+            "X-Dymo-SDK-Env: PHP",
+            "X-Dymo-SDK-Version: 0.0.32"
+        ]);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+
+        $response = curl_exec($ch);
+        if (curl_errno($ch)) throw new BadRequestError(curl_error($ch));
+
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($httpCode >= 400) throw new BadRequestError("Error: HTTP $httpCode");
+
+        $response = json_decode($response, true);
+        $deny = $rules["deny"];
+        $reasons = [];
+
+        if (in_array("INVALID", $deny) && empty($response["valid"])) {
+            return [
+                "phone" => $response["phone"] ?? $phone,
+                "allow" => false,
+                "reasons" => ["INVALID"],
+                "response" => $response
+            ];
+        }
+        if (in_array("FRAUD", $deny) && !empty($response["fraud"])) $reasons[] = "FRAUD";
+        if (in_array("HIGH_RISK_SCORE", $deny) && ($response["plugins"]["riskScore"] ?? 0) >= 80) $reasons[] = "HIGH_RISK_SCORE";
+
+        return [
+            "phone" => $response["phone"] ?? $phone,
             "allow" => count($reasons) === 0,
             "reasons" => $reasons,
             "response" => $response
@@ -410,7 +493,7 @@ function send_email($token, $data) {
         "Authorization: $token",
         "User-Agent: DymoAPISDK/1.0.0",
         "X-Dymo-SDK-Env: PHP",
-        "X-Dymo-SDK-Version: 0.0.31"
+        "X-Dymo-SDK-Version: 0.0.32"
     ]);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
     
@@ -463,7 +546,7 @@ function get_random($token, $data) {
         "Content-Type: application/json", 
         "User-Agent: DymoAPISDK/1.0.0",
         "X-Dymo-SDK-Env: PHP",
-        "X-Dymo-SDK-Version: 0.0.31"
+        "X-Dymo-SDK-Version: 0.0.32"
     ]);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
     
@@ -506,7 +589,7 @@ function extract_with_textly(string $token, array $data): mixed {
         "Content-Type: application/json",
         "User-Agent: DymoAPISDK/1.0.0",
         "X-Dymo-SDK-Env: PHP",
-        "X-Dymo-SDK-Version: 0.0.31"
+        "X-Dymo-SDK-Version: 0.0.32"
     ]);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
 
