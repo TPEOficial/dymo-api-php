@@ -58,6 +58,9 @@ class DymoAPI {
             "email" => [
                 "deny" => ["FRAUD", "INVALID", "NO_MX_RECORDS", "NO_REPLY_EMAIL"]
             ],
+            "ip" => [
+                "deny" => ["FRAUD", "INVALID", "TOR_NETWORK"]
+            ],
             "phone" => [
                 "deny" => ["FRAUD", "INVALID"]
             ],
@@ -386,7 +389,7 @@ class DymoAPI {
      * Deny rules (some are PREMIUM ⚠️):
      * - "FRAUD", "INVALID", "NO_MX_RECORDS" ⚠️, "PROXIED_EMAIL" ⚠️, "FREE_SUBDOMAIN" ⚠️,
      *   "PERSONAL_EMAIL", "CORPORATE_EMAIL", "NO_REPLY_EMAIL", "ROLE_ACCOUNT",
-     *   "NO_REACHABLE" ⚠️, "NO_GRAVATAR" ⚠️,"HIGH_RISK_SCORE" ⚠️
+     *   "NO_REACHABLE" ⚠️, "NO_GRAVATAR" ⚠️, "HIGH_RISK_SCORE" ⚠️
      *
      * @param string $email The email address to validate.
      * @param array|null $rules Optional array of deny rules. If not provided, defaults to:
@@ -406,6 +409,36 @@ class DymoAPI {
     {
         $rulesToUse = $rules ?? ($this->rules["email"] ?? ["FRAUD", "INVALID", "NO_MX_RECORDS", "NO_REPLY_EMAIL"]);
         return $this->getFunction("private", "is_valid_email")($email, $rulesToUse);
+    }
+
+    /**
+     * Validates an IP using the Data Verifier API.
+     *
+     * This function is a wrapper around the internal API function `is_valid_ip`.
+     * It simply calls the internal function with the given IP and returns
+     * the result. All validation logic is handled by the internal function.
+     *
+     * Deny rules (some are PREMIUM ⚠️):
+     * - "FRAUD", "INVALID", "TOR_NETWORK" ⚠️, "HIGH_RISK_SCORE" ⚠️
+     *
+     * @param string $ip The IP address to validate.
+     * @param array|null $rules Optional array of deny rules. If not provided, defaults to:
+     *                          ["FRAUD", "INVALID", "TOR_NETWORK"].
+     *
+     * @return bool True if the IP passes validation, false otherwise.
+     *
+     * @throws APIException If the token is missing, invalid, or the validation request fails.
+     *
+     * @example
+     * $valid = $client->isValidIP("52.94.236.248");
+     * $validWithRules = $client->isValidIP("52.94.236.248", ["FRAUD", "TOR_NETWORK", "COUNTRY:RU"]);
+     *
+     * @see https://docs.tpeoficial.com/docs/dymo-api/private/ip-validation
+     */
+    public function isValidIP(string $ip, ?array $rules = null): bool
+    {
+        $rulesToUse = $rules ?? ($this->rules["ip"] ?? ["FRAUD", "INVALID", "TOR_NETWORK"]);
+        return $this->getFunction("private", "is_valid_ip")($ip, $rulesToUse);
     }
 
     /**

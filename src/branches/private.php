@@ -104,7 +104,7 @@ function is_valid_data($token, $data) {
             "Content-Type: application/json", 
             "User-Agent: DymoAPISDK/1.0.0",
             "X-Dymo-SDK-Env: PHP",
-            "X-Dymo-SDK-Version: 0.0.32"
+            "X-Dymo-SDK-Version: 0.0.33"
         ]);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
@@ -223,7 +223,7 @@ function is_valid_data_raw($token, $data) {
             "Content-Type: application/json", 
             "User-Agent: DymoAPISDK/1.0.0",
             "X-Dymo-SDK-Env: PHP",
-            "X-Dymo-SDK-Version: 0.0.32"
+            "X-Dymo-SDK-Version: 0.0.33"
         ]);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
@@ -252,7 +252,7 @@ function is_valid_data_raw($token, $data) {
  *
  * The API will validate the email and apply optional plugins for:
  * - MX Records ("NO_MX_RECORDS")
- * - Reachability ("NO_REACHABLE")
+ * - Reachable ("NO_REACHABLE")
  * - High Risk Score ("HIGH_RISK_SCORE")
  *
  * Deny rules (some are PREMIUM ⚠️):
@@ -287,7 +287,7 @@ function is_valid_email($token, $email, $rules = null) {
 
     $plugins = [];
     if (in_array("NO_MX_RECORDS", $rules["deny"])) $plugins[] = "mxRecords";
-    if (in_array("NO_REACHABLE", $rules["deny"])) $plugins[] = "reachability";
+    if (in_array("NO_REACHABLE", $rules["deny"])) $plugins[] = "reachable";
     if (in_array("HIGH_RISK_SCORE", $rules["deny"])) $plugins[] = "riskScore";
     if (in_array("NO_GRAVATAR", $rules["deny"])) $plugins[] = "gravatar";
 
@@ -301,7 +301,7 @@ function is_valid_email($token, $email, $rules = null) {
             "Content-Type: application/json",
             "User-Agent: DymoAPISDK/1.0.0",
             "X-Dymo-SDK-Env: PHP",
-            "X-Dymo-SDK-Version: 0.0.32"
+            "X-Dymo-SDK-Version: 0.0.33"
         ]);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
@@ -340,6 +340,93 @@ function is_valid_email($token, $email, $rules = null) {
 
         return [
             "email" => $response["email"] ?? $email,
+            "allow" => count($reasons) === 0,
+            "reasons" => $reasons,
+            "response" => $response
+        ];
+
+    } catch (BadRequestError $e) {
+        throw new InternalServerError($e->getMessage());
+    }
+}
+
+/**
+ * Validate an IP using the Data Verifier API with deny rules.
+ *
+ * This function checks the given IP against configurable deny rules
+ * and returns a boolean indicating whether the IP passes all checks.
+ *
+ * The API will validate the IP and apply optional plugins for:
+ * - TOR_NETWORK ("TOR_NETWORK")
+ * - High Risk Score ("HIGH_RISK_SCORE")
+ *
+ * Deny rules (some are PREMIUM ⚠️):
+ * - "FRAUD"
+ * - "INVALID"
+ * - "TOR_NETWORK" ⚠️
+ * - "HIGH_RISK_SCORE" ⚠️
+ *
+ * @param {string | null} token - The API key to authenticate the request.
+ * @param {string} ip - The IP address to validate.
+ * @param {{ deny: string[] }} [rules] - Optional deny rules to apply.
+ * @returns {Promise<boolean>} True if the IP passes all deny rules, false otherwise.
+ *
+ * @throws {APIError} If the token is null or the request fails.
+ *
+ * @example
+ * const valid = await isValidIP(apiToken, "52.94.236.248", { deny: ["FRAUD", "TOR_NETWORK", "COUNTRY:RU"] });
+ *
+ * @see [Documentation](https://docs.tpeoficial.com/docs/dymo-api/private/ip-validation)
+ */
+function is_valid_ip($token, $ip, $rules = null) {
+    if ($token === null) throw new BadRequestError("Invalid private token.");
+    if (empty($rules["deny"])) throw new BadRequestError("You must provide at least one deny rule.");
+
+    $plugins = [];
+    if (in_array("TOR_NETWORK", $rules["deny"])) $plugins[] = "torNetwork";
+    if (in_array("HIGH_RISK_SCORE", $rules["deny"])) $plugins[] = "riskScore";
+
+    $payload = ["ip" => $ip, "plugins" => $plugins];
+
+    try {
+        $ch = curl_init(BASE_URL . "/v1/private/secure/verify");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "Authorization: $token",
+            "Content-Type: application/json",
+            "User-Agent: DymoAPISDK/1.0.0",
+            "X-Dymo-SDK-Env: PHP",
+            "X-Dymo-SDK-Version: 0.0.33"
+        ]);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+
+        $response = curl_exec($ch);
+        if (curl_errno($ch)) throw new BadRequestError(curl_error($ch));
+
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($httpCode >= 400) throw new BadRequestError("Error: HTTP $httpCode");
+
+        $response = json_decode($response, true);
+        $deny = $rules["deny"];
+        $reasons = [];
+
+        if (in_array("INVALID", $deny) && empty($response["valid"])) {
+            return [
+                "ip" => $response["ip"] ?? $ip,
+                "allow" => false,
+                "reasons" => ["INVALID"],
+                "response" => $response
+            ];
+        }
+        if (in_array("FRAUD", $deny) && !empty($response["fraud"])) $reasons[] = "FRAUD";
+        if (in_array("TOR_NETWORK", $deny) && empty($response["plugins"]["torNetwork"])) $reasons[] = "TOR_NETWORK";
+        if (in_array("HIGH_RISK_SCORE", $deny) && ($response["plugins"]["riskScore"] ?? 0) >= 80) $reasons[] = "HIGH_RISK_SCORE";
+
+        return [
+            "ip" => $response["ip"] ?? $ip,
             "allow" => count($reasons) === 0,
             "reasons" => $reasons,
             "response" => $response
@@ -393,7 +480,7 @@ function is_valid_phone($token, $phone, $rules = null) {
             "Content-Type: application/json",
             "User-Agent: DymoAPISDK/1.0.0",
             "X-Dymo-SDK-Env: PHP",
-            "X-Dymo-SDK-Version: 0.0.32"
+            "X-Dymo-SDK-Version: 0.0.33"
         ]);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
@@ -493,7 +580,7 @@ function send_email($token, $data) {
         "Authorization: $token",
         "User-Agent: DymoAPISDK/1.0.0",
         "X-Dymo-SDK-Env: PHP",
-        "X-Dymo-SDK-Version: 0.0.32"
+        "X-Dymo-SDK-Version: 0.0.33"
     ]);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
     
@@ -546,7 +633,7 @@ function get_random($token, $data) {
         "Content-Type: application/json", 
         "User-Agent: DymoAPISDK/1.0.0",
         "X-Dymo-SDK-Env: PHP",
-        "X-Dymo-SDK-Version: 0.0.32"
+        "X-Dymo-SDK-Version: 0.0.33"
     ]);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
     
@@ -589,7 +676,7 @@ function extract_with_textly(string $token, array $data): mixed {
         "Content-Type: application/json",
         "User-Agent: DymoAPISDK/1.0.0",
         "X-Dymo-SDK-Env: PHP",
-        "X-Dymo-SDK-Version: 0.0.32"
+        "X-Dymo-SDK-Version: 0.0.33"
     ]);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
 
