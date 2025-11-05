@@ -1,0 +1,17 @@
+{
+    "name": "tpeoficial/dymoapi",
+    "description": "Flow system for Dymo API.",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "DymoAPI\\": "src/"
+        }
+    },
+    "require": {
+        "guzzlehttp/guzzle": "^7.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "10"
+    },
+    "version": "0.0.35"
+}
