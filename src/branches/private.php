@@ -104,7 +104,7 @@ function is_valid_data($token, $data) {
             "Content-Type: application/json", 
             "User-Agent: DymoAPISDK/1.0.0",
             "X-Dymo-SDK-Env: PHP",
-            "X-Dymo-SDK-Version: 0.0.35"
+            "X-Dymo-SDK-Version: 0.0.36"
         ]);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
@@ -223,7 +223,7 @@ function is_valid_data_raw($token, $data) {
             "Content-Type: application/json", 
             "User-Agent: DymoAPISDK/1.0.0",
             "X-Dymo-SDK-Env: PHP",
-            "X-Dymo-SDK-Version: 0.0.35"
+            "X-Dymo-SDK-Version: 0.0.36"
         ]);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
@@ -301,7 +301,7 @@ function is_valid_email($token, $email, $rules = null) {
             "Content-Type: application/json",
             "User-Agent: DymoAPISDK/1.0.0",
             "X-Dymo-SDK-Env: PHP",
-            "X-Dymo-SDK-Version: 0.0.35"
+            "X-Dymo-SDK-Version: 0.0.36"
         ]);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
@@ -396,7 +396,7 @@ function is_valid_ip($token, $ip, $rules = null) {
             "Content-Type: application/json",
             "User-Agent: DymoAPISDK/1.0.0",
             "X-Dymo-SDK-Env: PHP",
-            "X-Dymo-SDK-Version: 0.0.35"
+            "X-Dymo-SDK-Version: 0.0.36"
         ]);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
@@ -488,7 +488,7 @@ function is_valid_phone($token, $phone, $rules = null) {
             "Content-Type: application/json",
             "User-Agent: DymoAPISDK/1.0.0",
             "X-Dymo-SDK-Env: PHP",
-            "X-Dymo-SDK-Version: 0.0.35"
+            "X-Dymo-SDK-Version: 0.0.36"
         ]);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
@@ -515,6 +515,14 @@ function is_valid_phone($token, $phone, $rules = null) {
         }
         if (in_array("FRAUD", $deny) && !empty($response["fraud"])) $reasons[] = "FRAUD";
         if (in_array("HIGH_RISK_SCORE", $deny) && ($response["plugins"]["riskScore"] ?? 0) >= 80) $reasons[] = "HIGH_RISK_SCORE";
+
+        // Country block rules.
+        foreach ($deny as $rule) {
+            if (strpos($rule, "COUNTRY:") === 0) {
+                $block = explode(":", $rule)[1]; // Extract country code.
+                if (($response["countryCode"] ?? null) === $block) $reasons[] = "COUNTRY:$block";
+            }
+        }
 
         return [
             "phone" => $response["phone"] ?? $phone,
@@ -588,7 +596,7 @@ function send_email($token, $data) {
         "Authorization: $token",
         "User-Agent: DymoAPISDK/1.0.0",
         "X-Dymo-SDK-Env: PHP",
-        "X-Dymo-SDK-Version: 0.0.35"
+        "X-Dymo-SDK-Version: 0.0.36"
     ]);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
     
@@ -641,7 +649,7 @@ function get_random($token, $data) {
         "Content-Type: application/json", 
         "User-Agent: DymoAPISDK/1.0.0",
         "X-Dymo-SDK-Env: PHP",
-        "X-Dymo-SDK-Version: 0.0.35"
+        "X-Dymo-SDK-Version: 0.0.36"
     ]);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
     
@@ -684,7 +692,7 @@ function extract_with_textly(string $token, array $data): mixed {
         "Content-Type: application/json",
         "User-Agent: DymoAPISDK/1.0.0",
         "X-Dymo-SDK-Env: PHP",
-        "X-Dymo-SDK-Version: 0.0.35"
+        "X-Dymo-SDK-Version: 0.0.36"
     ]);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
 
