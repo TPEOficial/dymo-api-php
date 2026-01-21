@@ -21,9 +21,11 @@ use Dymo\Models\PrayerTimes;
 use Dymo\Models\Validator;
 use Dymo\Models\SendEmail;
 use Dymo\Models\SRNG;
+use Dymo\Resilience\{ResilienceManager, ResilienceConfig, HttpClient, FallbackDataGenerator};
 
 require_once "exceptions.php";
 require_once "response_models.php";
+require_once "resilience/index.php";
 
 class DymoAPI {
     private $organization;
@@ -32,13 +34,15 @@ class DymoAPI {
     private $serverEmailConfig;
     private $baseUrl;
     private $errorLogRoute = "./error.log";
+    private ResilienceManager $resilienceManager;
+    private HttpClient $httpClient;
 
     const BASE_URL = "https://api.tpeoficial.com";
 
-    /**
-     * Construct a new instance of the Dymo API client.
+/**
+     * Construct a new instance of Dymo API client.
      *
-     * @param array $config The configuration array for the client.
+     * @param array $config The configuration array for client.
      * @param string $config["organization"] The organization name.
      * @param string $config["root_api_key"] The root API key.
      * @param string $config["api_key"] The API key.
@@ -46,7 +50,8 @@ class DymoAPI {
      * @param array $config["rules"]["email"] The email validation rules.
      * @param array $config["rules"]["phone"] The phone validation rules.
      * @param array $config["rules"]["sensitiveInfo"] The sensitive information validation rules.
-     * @param string $config["base_url"] Whether to use the local development server.
+     * @param string $config["base_url"] Whether to use local development server.
+     * @param array $config["resilience"] The resilience configuration.
      */
     public function __construct($config = []) {
         $this->organization = $config["organization"] ?? null;
@@ -74,6 +79,22 @@ class DymoAPI {
         $this->baseUrl = $config["base_url"] ?? "https://api.tpeoficial.com";
 
         $this->setBaseUrl($this->baseUrl);
+
+        // Initialize resilience system
+        $resilience = $config["resilience"] ?? [];
+        $clientId = $this->apiKey ?: $this->rootApiKey ?: "anonymous";
+        $this->resilienceManager = new ResilienceManager(
+            new ResilienceConfig($resilience),
+            $clientId
+        );
+
+        // Initialize HTTP client with resilience
+        $authToken = $this->rootApiKey ?: $this->apiKey;
+        $this->httpClient = new HttpClient(
+            $this->baseUrl . "/v1",
+            $authToken,
+            $this->resilienceManager
+        );
     }
 
     /**
