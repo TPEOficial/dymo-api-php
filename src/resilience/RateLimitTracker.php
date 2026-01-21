@@ -17,6 +17,36 @@ class RateLimitTracker {
     }
 
     /**
+     * Parses a header value that could be a number or "unlimited".
+     * Returns null if the value is "unlimited", null, or invalid.
+     */
+    private function parseHeaderValue(mixed $value): ?int {
+        // Handle non-string/non-numeric types (arrays, objects, null)
+        if ($value === null || is_array($value) || is_object($value)) {
+            return null;
+        }
+
+        // Convert to string and normalize
+        $strValue = trim((string)$value);
+        if ($strValue === '') {
+            return null;
+        }
+
+        if (strtolower($strValue) === 'unlimited') {
+            return null;
+        }
+
+        // Check if it's a valid number (after trimming whitespace)
+        if (!is_numeric($strValue)) {
+            return null;
+        }
+
+        $parsed = (int)$strValue;
+        // Rate limits can't be negative
+        return $parsed >= 0 ? $parsed : null;
+    }
+
+    /**
      * Update rate limit information from response headers
      */
     public function updateRateLimit(string $clientId, array $headers): void {
@@ -26,18 +56,37 @@ class RateLimitTracker {
 
         $limitInfo = &$this->clientLimits[$clientId];
 
-        // Update rate limit headers
-        if (isset($headers['x-ratelimit-limit-requests'])) {
-            $limitInfo['limit'] = (int)$headers['x-ratelimit-limit-requests'];
+        // Normalize header keys to lowercase
+        $headers = array_change_key_case($headers, CASE_LOWER);
+
+        // Get header values
+        $limitRequests = $headers['x-ratelimit-limit-requests'] ?? null;
+        $remainingRequests = $headers['x-ratelimit-remaining-requests'] ?? null;
+        $resetRequests = $headers['x-ratelimit-reset-requests'] ?? null;
+        $retryAfter = $headers['retry-after'] ?? null;
+
+        // Only update numeric values if they are valid numbers (not "unlimited")
+        $parsedLimit = $this->parseHeaderValue($limitRequests);
+        $parsedRemaining = $this->parseHeaderValue($remainingRequests);
+        $parsedRetryAfter = $this->parseHeaderValue($retryAfter);
+
+        if ($parsedLimit !== null) {
+            $limitInfo['limit'] = $parsedLimit;
         }
-        if (isset($headers['x-ratelimit-remaining-requests'])) {
-            $limitInfo['remaining'] = (int)$headers['x-ratelimit-remaining-requests'];
+        if ($parsedRemaining !== null) {
+            $limitInfo['remaining'] = $parsedRemaining;
         }
-        if (isset($headers['x-ratelimit-reset-requests'])) {
-            $limitInfo['resetTime'] = $headers['x-ratelimit-reset-requests'];
+        // Mark as unlimited if header explicitly says "unlimited"
+        if ($remainingRequests !== null && !is_array($remainingRequests) && !is_object($remainingRequests)) {
+            if (strtolower(trim((string)$remainingRequests)) === 'unlimited') {
+                $limitInfo['isUnlimited'] = true;
+            }
         }
-        if (isset($headers['retry-after'])) {
-            $limitInfo['retryAfter'] = (int)$headers['retry-after'];
+        if ($resetRequests !== null && is_string($resetRequests)) {
+            $limitInfo['resetTime'] = $resetRequests;
+        }
+        if ($parsedRetryAfter !== null) {
+            $limitInfo['retryAfter'] = $parsedRetryAfter;
         }
 
         $limitInfo['lastUpdated'] = time();
@@ -48,7 +97,15 @@ class RateLimitTracker {
      */
     public function isRateLimited(string $clientId): bool {
         $limitInfo = $this->clientLimits[$clientId] ?? null;
-        return $limitInfo !== null && isset($limitInfo['remaining']) && $limitInfo['remaining'] <= 0;
+        if ($limitInfo === null) {
+            return false;
+        }
+        // If marked as unlimited, never rate limited
+        if (isset($limitInfo['isUnlimited']) && $limitInfo['isUnlimited'] === true) {
+            return false;
+        }
+        // Only consider rate limited if remaining is explicitly set and is 0 or less
+        return isset($limitInfo['remaining']) && $limitInfo['remaining'] <= 0;
     }
 
     /**
