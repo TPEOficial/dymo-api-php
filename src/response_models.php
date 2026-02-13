@@ -13,9 +13,48 @@ enum VerifyPlugins: string {
     case REACHABLE = "reachable";
     case REPUTATION = "reputation";
     case RISK_SCORE = "riskScore";
+    case SOCIAL_FOOTPRINT = "socialFootprint";
     case TOR_NETWORK = "torNetwork";
     case TYPOSQUATTING = "typosquatting";
     case URL_SHORTENER = "urlShortener";
+}
+
+/**
+ * Platform detected by Social Footprint plugin
+ */
+class SocialFootprintPlatform {
+    public string $slug;
+    public string $platform;
+    public string $category;
+    public int $confidence;
+    public ?array $metadata;
+
+    public function __construct(
+        string $slug,
+        string $platform,
+        string $category,
+        int $confidence,
+        ?array $metadata = null
+    ) {
+        $this->slug = $slug;
+        $this->platform = $platform;
+        $this->category = $category;
+        $this->confidence = $confidence;
+        $this->metadata = $metadata;
+    }
+}
+
+/**
+ * Social Footprint plugin response
+ */
+class SocialFootprintPlugin {
+    public int $totalChecked;
+    public array $platforms;
+
+    public function __construct(int $totalChecked, array $platforms = []) {
+        $this->totalChecked = $totalChecked;
+        $this->platforms = $platforms;
+    }
 }
 
 class PhoneData {

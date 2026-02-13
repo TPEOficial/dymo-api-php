@@ -441,6 +441,10 @@ class FallbackDataGenerator {
             "nsfw" => false,
             "reputation" => "unknown",
             "riskScore" => 0,
+            "socialFootprint" => [
+                "totalChecked" => 0,
+                "platforms" => []
+            ],
             "torNetwork" => false,
             "typosquatting" => 0,
             "urlShortener" => false,
