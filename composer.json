@@ -13,5 +13,5 @@
     "require-dev": {
         "phpunit/phpunit": "^10.5.62"
     },
-    "version": "0.0.39"
+    "version": "0.0.40"
 }
