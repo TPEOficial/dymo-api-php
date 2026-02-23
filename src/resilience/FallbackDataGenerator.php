@@ -263,7 +263,7 @@ class FallbackDataGenerator {
             ],
             "country" => "",
             "countryCode" => "",
-            "plugins" => ["blocklist" => false, "riskScore" => 0]
+            "plugins" => ["blocklist" => false, "riskScore" => 0, "spam" => false]
         ];
     }
 
@@ -297,7 +297,7 @@ class FallbackDataGenerator {
             "mobile" => false,
             "proxy" => true,
             "hosting" => false,
-            "plugins" => ["blocklist" => false, "riskScore" => 0]
+            "plugins" => ["blocklist" => false, "riskScore" => 0, "spam" => false]
         ];
     }
 
@@ -427,6 +427,7 @@ class FallbackDataGenerator {
             "nsfw" => false,
             "reputation" => "unknown",
             "riskScore" => 0,
+            "spam" => false,
             "torNetwork" => false,
             "typosquatting" => 0,
             "urlShortener" => false
@@ -445,6 +446,7 @@ class FallbackDataGenerator {
                 "totalChecked" => 0,
                 "platforms" => []
             ],
+            "spam" => false,
             "torNetwork" => false,
             "typosquatting" => 0,
             "urlShortener" => false,

@@ -14,6 +14,7 @@ enum VerifyPlugins: string {
     case REPUTATION = "reputation";
     case RISK_SCORE = "riskScore";
     case SOCIAL_FOOTPRINT = "socialFootprint";
+    case SPAM = "spam";
     case TOR_NETWORK = "torNetwork";
     case TYPOSQUATTING = "typosquatting";
     case URL_SHORTENER = "urlShortener";
