@@ -64,7 +64,7 @@ class DymoAPI {
                 "deny" => ["FRAUD", "INVALID", "NO_MX_RECORDS", "NO_REPLY_EMAIL"]
             ],
             "ip" => [
-                "deny" => ["FRAUD", "INVALID", "TOR_NETWORK"]
+                "deny" => ["FRAUD", "INVALID", "VPN", "TOR_NETWORK"]
             ],
             "phone" => [
                 "deny" => ["FRAUD", "INVALID"]
